@@ -1,0 +1,126 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+import { useForgotPassword } from '../../hooks/useForgotPassword';
+import AuthFormHeader from '../ui/AuthFormHeader';
+import AuthInputField from '../ui/AuthInputField';
+import AuthButton from '../ui/AuthButton';
+import Alert from '../../../components/ui/Alert';
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } },
+};
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
+};
+
+const ForgotPasswordSchema = Yup.object().shape({
+  email: Yup.string().email('Please enter a valid email').required('Email is required'),
+});
+
+const ForgotPasswordForm = () => {
+  const { handleForgotPassword, loading, message, error, sent } = useForgotPassword();
+
+  const formik = useFormik({
+    initialValues: { email: '' },
+    validationSchema: ForgotPasswordSchema,
+    onSubmit: async (values, formikBag) => {
+      await handleForgotPassword(values);
+      formikBag.setSubmitting(false);
+    },
+  });
+
+  const { values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting, isValid } = formik;
+
+  // ✅ Show success message
+  if (sent) {
+    return (
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="text-center p-6 bg-white rounded-xl shadow-lg border border-gray-100"
+      >
+        <AuthFormHeader
+          title="Password Reset Initiated"
+          description="A password reset link has been successfully sent to the provided email address (if an account exists)."
+          showLogo={true}
+        />
+        <motion.div variants={itemVariants} className="mt-8">
+          <Alert
+            show={true}
+            type="success"
+            message={message || 'Please check your inbox (and spam folder) for the link.'}
+            persistent={true}
+          />
+          <a
+            href="/login"
+            className="text-[#388E3C] font-medium hover:text-[#ADD0B3] transition-colors text-sm underline"
+          >
+            Return to Login
+          </a>
+        </motion.div>
+      </motion.div>
+    );
+  }
+
+  // 🧠 Default Form
+  return (
+    <motion.div variants={containerVariants} initial="hidden" animate="visible">
+      <AuthFormHeader
+        title="Reset Password"
+        description="Enter the email associated with your account to receive a password reset link."
+      />
+
+      <form onSubmit={handleSubmit} className="space-y-6 pt-2">
+        <AuthInputField
+          id="email"
+          name="email"
+          type="email"
+          label="Email Address"
+          placeholder="your.email@example.com"
+          value={values.email}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          error={touched.email && errors.email}
+          required
+          autoComplete="email"
+          variants={itemVariants}
+          aria-invalid={touched.email && errors.email ? 'true' : 'false'}
+          aria-describedby={touched.email && errors.email ? 'email-error' : undefined}
+        />
+
+        <motion.div variants={itemVariants} className="pt-2">
+          <AuthButton type="submit" loading={isSubmitting || loading} disabled={isSubmitting || !isValid || loading}>
+            {isSubmitting || loading ? (
+              <>
+                <span className="animate-spin inline-block mr-2">⏳</span> Sending Request...
+              </>
+            ) : (
+              'Send Reset Link'
+            )}
+          </AuthButton>
+        </motion.div>
+
+        <motion.div variants={itemVariants} className="text-center mt-3">
+          <a
+            href="/login"
+            className="text-sm text-[#ADD0B3] font-medium hover:text-[#388E3C] transition-colors"
+          >
+            Back to Login
+          </a>
+        </motion.div>
+      </form>
+
+      <motion.div variants={itemVariants} className="mt-6">
+        <Alert show={!!error} type="error" message={error} />
+      </motion.div>
+    </motion.div>
+  );
+};
+
+export default ForgotPasswordForm;
