@@ -13,6 +13,7 @@ import {
   Remove as RemoveIcon
 } from '@mui/icons-material';
 import { useServices } from '../../hooks/useServices';
+import { useToast } from '../../hooks/useToast';
 import { toServiceFormData } from '../../services/servicesApi';
 
 // --- Constants ---
@@ -43,24 +44,19 @@ const STEPS = ['Basic Info', 'Details & Content', 'Media & Actions'];
 export default function ServiceForm({ service, onClose }) {
   const isEdit = !!service;
   const { saveService, loading: saving, error: saveError, setError: setHookError } = useServices();
+  const { showToast } = useToast();
 
   const [formData, setFormData] = useState(service || initialServiceState);
   const [files, setFiles] = useState({});
   const [activeStep, setActiveStep] = useState(0);
   const [localError, setLocalError] = useState('');
-  const [iconTypes, setIconTypes] = useState([]); // Track if icon is FA or custom image
+  // detail icons will be image uploads only (stored under data.images with a file-key)
 
   useEffect(() => {
     if (service) {
       setFormData(service);
-      // Determine icon types for existing details
-      const types = service.data.serviceObj.details.map(detail => 
-        detail.icon && detail.icon.startsWith('fa-') ? 'fa' : (detail.icon ? 'custom' : 'none')
-      );
-      setIconTypes(types);
     } else {
       setFormData(initialServiceState);
-      setIconTypes(['none']);
     }
   }, [service]);
 
@@ -111,53 +107,6 @@ export default function ServiceForm({ service, onClose }) {
     }
   };
 
-  const handleIconTypeChange = (index, type) => {
-    const serviceTitle = formData.title || 'service';
-    const fileKey = `${serviceTitle}-details-icon-${index + 1}`;
-    
-    setIconTypes(prev => {
-      const newTypes = [...prev];
-      newTypes[index] = type;
-      return newTypes;
-    });
-
-    if (type === 'fa') {
-      // Remove any existing custom image file
-      setFiles(prev => {
-        const newFiles = { ...prev };
-        delete newFiles[fileKey];
-        return newFiles;
-      });
-      // Clear image preview
-      setFormData(prev => {
-        const newState = JSON.parse(JSON.stringify(prev));
-        delete newState.data.images[fileKey];
-        newState.data.serviceObj.details[index].icon = '';
-        return newState;
-      });
-    } else if (type === 'custom') {
-      // Set icon to fileKey for custom image
-      setFormData(prev => {
-        const newState = JSON.parse(JSON.stringify(prev));
-        newState.data.serviceObj.details[index].icon = fileKey;
-        return newState;
-      });
-    } else {
-      // 'none' - clear everything
-      setFiles(prev => {
-        const newFiles = { ...prev };
-        delete newFiles[fileKey];
-        return newFiles;
-      });
-      setFormData(prev => {
-        const newState = JSON.parse(JSON.stringify(prev));
-        delete newState.data.images[fileKey];
-        newState.data.serviceObj.details[index].icon = '';
-        return newState;
-      });
-    }
-  };
-
   const handleAddDetail = () => {
     setFormData(prev => {
       const newState = JSON.parse(JSON.stringify(prev));
@@ -168,7 +117,6 @@ export default function ServiceForm({ service, onClose }) {
       });
       return newState;
     });
-    setIconTypes(prev => [...prev, 'none']);
   };
 
   const handleDeleteDetail = (index) => {
@@ -177,11 +125,7 @@ export default function ServiceForm({ service, onClose }) {
       newState.data.serviceObj.details.splice(index, 1);
       return newState;
     });
-    setIconTypes(prev => {
-      const newTypes = [...prev];
-      newTypes.splice(index, 1);
-      return newTypes;
-    });
+    // icons are stored under data.images keyed by fileKey; we just remove the detail
   };
 
   const handleAddPoint = (detailIndex) => {
@@ -237,9 +181,12 @@ export default function ServiceForm({ service, onClose }) {
 
       const payload = toServiceFormData(finalServiceJson, files);
       await saveService(payload);
+      showToast(isEdit ? 'Service updated successfully' : 'Service created successfully', 'success');
       onClose();
     } catch (err) {
-      setLocalError(err.message || 'Error submitting service. Please try again.');
+      const msg = err?.message || 'Error submitting service. Please try again.';
+      setLocalError(msg);
+      showToast(msg, 'error');
     }
   };
 
@@ -263,7 +210,16 @@ export default function ServiceForm({ service, onClose }) {
                 sx={{ mb: 2 }}
               />
             </Grid>
-            <Grid sx={{ width: { xs: '100%', sm: '50%' } }}>
+            <Grid sx={{ width: { xs: '100%', sm: '50%' }, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box>
+                <Typography variant="caption" sx={{ display: 'block', mb: 1, color: 'gray.700' }}>Main Color</Typography>
+                <input
+                  type="color"
+                  value={obj.main_color}
+                  onChange={(e) => handleTextChange({ target: { value: e.target.value } }, 'main_color')}
+                  style={{ width: 48, height: 36, border: 'none', padding: 0, background: 'transparent', cursor: 'pointer' }}
+                />
+              </Box>
               <TextField
                 label="Main Color (Hex Code)"
                 name="main_color"
@@ -306,7 +262,7 @@ export default function ServiceForm({ service, onClose }) {
             {obj.details.map((detail, index) => {
               const serviceTitle = formData.title || 'service';
               const iconFileKey = `${serviceTitle}-details-icon-${index + 1}`;
-              const currentIconType = iconTypes[index] || 'none';
+              const iconPreview = formData.data.images?.[iconFileKey];
               
               return (
                 <Paper key={index} elevation={2} sx={{ p: 4, borderRadius: '12px' }}>
@@ -334,68 +290,41 @@ export default function ServiceForm({ service, onClose }) {
                     sx={{ mb: 3 }}
                   />
                   
-                  {/* Icon Selection */}
                   <Typography variant="subtitle2" sx={{ mb: 1, color: 'gray.600', fontWeight: 'medium' }}>
-                    Icon:
+                    Icon Image (upload):
                   </Typography>
-                  <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-                    {['none', 'fa', 'custom'].map((type) => (
-                      <Button
-                        key={type}
-                        variant={currentIconType === type ? 'contained' : 'outlined'}
-                        onClick={() => handleIconTypeChange(index, type)}
-                        sx={{
-                          backgroundColor: currentIconType === type ? PRIMARY_COLOR : 'transparent',
-                          color: currentIconType === type ? 'white' : PRIMARY_COLOR,
-                          borderColor: PRIMARY_COLOR,
-                          '&:hover': { 
-                            backgroundColor: currentIconType === type ? HOVER_COLOR : 'transparent',
-                            borderColor: HOVER_COLOR 
-                          },
-                        }}
-                      >
-                        {type === 'none' ? 'No Icon' : type === 'fa' ? 'FontAwesome' : 'Custom Image'}
-                      </Button>
-                    ))}
-                  </Box>
-
-                  {currentIconType === 'fa' && (
-                    <TextField
-                      label="Font Awesome Class (e.g., fa-code, fa-laptop)"
-                      fullWidth
-                      value={detail.icon}
-                      onChange={(e) => handleTextChange(e, 'details', index, 'icon')}
-                      helperText="Use classes like fa-code, fa-mobile-alt, etc."
-                      sx={{ mb: 3 }}
+                  <Box sx={{ mb: 3 }}>
+                    <input
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      id={`details-icon-${index}`}
+                      type="file"
+                      onChange={(e) => {
+                        handleFileChange(e, iconFileKey);
+                        // set reference in detail.icon to the fileKey so backend knows to look in images
+                        setFormData(prev => {
+                          const newState = JSON.parse(JSON.stringify(prev));
+                          newState.data.serviceObj.details[index].icon = iconFileKey;
+                          return newState;
+                        });
+                      }}
                     />
-                  )}
-
-                  {currentIconType === 'custom' && (
-                    <Box sx={{ mb: 3 }}>
-                      <input
-                        accept="image/*"
-                        style={{ display: 'none' }}
-                        id={`details-icon-${index}`}
-                        type="file"
-                        onChange={(e) => handleFileChange(e, iconFileKey)}
-                      />
-                      <label htmlFor={`details-icon-${index}`}>
-                        <Button variant="contained" component="span" sx={{ backgroundColor: PRIMARY_COLOR, "&:hover": { backgroundColor: HOVER_COLOR } }}>
-                          Upload Icon Image
-                        </Button>
-                      </label>
-                      {formData.data.images[iconFileKey] && (
-                        <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-                          <img 
-                            src={formData.data.images[iconFileKey]} 
-                            alt="Icon Preview" 
-                            style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
-                          />
-                          <Chip label="Icon Loaded" color="success" size="small" />
-                        </Box>
-                      )}
-                    </Box>
-                  )}
+                    <label htmlFor={`details-icon-${index}`}>
+                      <Button variant="contained" component="span" sx={{ backgroundColor: PRIMARY_COLOR, "&:hover": { backgroundColor: HOVER_COLOR } }}>
+                        Upload Icon Image
+                      </Button>
+                    </label>
+                    {iconPreview && (
+                      <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <img 
+                          src={iconPreview} 
+                          alt="Icon Preview" 
+                          style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
+                        />
+                        <Chip label="Icon Loaded" color="success" size="small" />
+                      </Box>
+                    )}
+                  </Box>
 
                   {/* Points Management */}
                   <Typography variant="subtitle2" sx={{ mb: 2, color: 'gray.600', fontWeight: 'medium' }}>
@@ -511,27 +440,7 @@ export default function ServiceForm({ service, onClose }) {
                   sx={{ mb: 2 }}
                 />
               </Box>
-              <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'medium', mb: 2 }}>
-                  Home Page Button
-                </Typography>
-                <TextField
-                  label="Button Text (e.g., 'Explore Now')"
-                  fullWidth
-                  size="small"
-                  value={obj.home_button.name}
-                  onChange={(e) => handleTextChange(e, 'button', 1, 'name')}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  label="Button Link (e.g., '/home')"
-                  fullWidth
-                  size="small"
-                  value={obj.home_button.link}
-                  onChange={(e) => handleTextChange(e, 'button', 1, 'link')}
-                  sx={{ mb: 2 }}
-                />
-              </Box>
+              {/* Home Page Button removed as per admin request; main button remains */}
             </Grid>
           </Grid>
         );

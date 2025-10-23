@@ -42,7 +42,7 @@ const HOVER_COLOR = "#8CB190";
 
 // --- Main Component ---
 const UserManagement = () => {
-  const { user: authUser } = useAuth(); // renamed for clarity
+  const { user: authUser, loading: authLoading } = useAuth(); // renamed for clarity
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -202,7 +202,19 @@ const UserManagement = () => {
     }
   };
 
-  // Permission Check
+  // While we are restoring the user profile from the token, show a loader.
+  if (authLoading) {
+    return (
+      <DashboardLayout>
+        <div className="p-10 text-center bg-white rounded-xl shadow-md m-10">
+          <CircularProgress color="inherit" size={32} sx={{ mr: 2 }} />
+          <p className="mt-4 text-gray-600">Restoring session...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Permission Check: only after loading completed, evaluate role.
   if (!hasPermission(authUser?.role, "superadmin")) {
     return (
       <DashboardLayout>

@@ -8,12 +8,13 @@ import { updateProfile } from "../Auth/services/userService";
 import { useAuth } from "../contexts/AuthContext";
 
 const Profile = () => {
-  const { token } = useAuth();
+   const { token, login } = useAuth();
   const [formData, setFormData] = useState({
     fullName: "",
     userName: "",
     email: "",
     password: "",
+    originalEmail: "", // Store original email to detect changes
   });
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState({ show: false, type: "", message: "" });
@@ -28,6 +29,7 @@ const Profile = () => {
           fullName: data.user.fullName || "",
           userName: data.user.userName || "",
           email: data.user.email || "",
+          originalEmail: data.user.email || "", // Store original email
           password: "",
         });
       } else {
@@ -52,23 +54,40 @@ const Profile = () => {
     e.preventDefault();
     setLoading(true);
 
-    // ✨ إرسال البيانات بدون الباسورد لو كانت فاضية
-    const updatedData = { ...formData };
-    if (!updatedData.password.trim()) {
-      delete updatedData.password;
+    // Check if email is being changed
+    const isEmailChange = formData.email !== formData.originalEmail;
+    if (isEmailChange) {
+      // Store current email in session to validate against after verification
+      sessionStorage.setItem('pendingEmailChange', formData.originalEmail);
     }
+
+    const updatedData = { ...formData };
+    if (!updatedData.password.trim()) delete updatedData.password;
+    delete updatedData.originalEmail; // Don't send to API
 
     const { ok, data } = await updateProfile(updatedData);
     setLoading(false);
 
     if (ok) {
-      setAlert({
-        show: true,
-        type: "success",
-        message:
-          data?.message ||
-          "Profile updated successfully! Please verify your new email if changed.",
-      });
+      if (isEmailChange) {
+        setAlert({
+          show: true,
+          type: "info",
+          message: "A verification link has been sent to your new email address. Please verify it to complete the change. You'll need to login again with your new email after verification."
+        });
+        // Don't update context for email changes - wait for verification
+      } else {
+        setAlert({
+          show: true,
+          type: "success",
+          message: data?.message || "Profile updated successfully!"
+        });
+        // Only update context for non-email changes
+        const { ok: profileOk, data: newData } = await fetchUserProfile();
+        if (profileOk && newData?.user) {
+          login(newData.user, token);
+        }
+      }
     } else {
       setAlert({
         show: true,

@@ -1,215 +1,263 @@
 import React from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Button, Typography, Box, Chip } from "@mui/material";
-import { Close as CloseIcon } from "@mui/icons-material";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Box,
+  Typography,
+  IconButton,
+  Chip,
+} from '@mui/material';
+import { Close as CloseIcon, MiscellaneousServices as ServiceIcon } from '@mui/icons-material';
 
-const DetailRow = ({ label, value, isContent = false, isArray = false }) => (
-  <Box sx={{ 
-    display: 'flex', 
-    py: 2, 
-    borderBottom: '1px solid', 
-    borderColor: 'gray.200', 
-    '&:last-child': { borderBottom: 'none' }, 
-    flexDirection: isContent || isArray ? 'column' : 'row', 
-    gap: 2 
-  }}>
-    <Typography variant="body1" sx={{ fontWeight: 'semibold', color: 'gray.600', width: { xs: '100%', sm: '30%' }, minWidth: '120px' }}>
+const PRIMARY_COLOR = '#ADD0B3';
+const HOVER_COLOR = '#8CB190';
+
+// Reusable Row Component
+const DetailRow = ({ label, value, isFullWidth = false, isContent = false }) => (
+  <Box
+    sx={{
+      display: 'flex',
+      flexDirection: isFullWidth || isContent ? 'column' : 'row',
+      justifyContent: isFullWidth ? 'flex-start' : 'space-between',
+      py: 1.5,
+      borderBottom: '1px solid #eee',
+    }}
+  >
+    <Typography variant="body1" sx={{ fontWeight: 'bold', color: PRIMARY_COLOR, minWidth: '150px' }}>
       {label}:
     </Typography>
-    <Box sx={{ 
-      color: 'gray.800', 
-      width: isContent || isArray ? '100%' : { xs: '100%', sm: '70%' }, 
-      bgcolor: isContent ? 'gray.100' : 'transparent', 
-      p: isContent ? 2 : 0, 
-      borderRadius: isContent ? '8px' : 0, 
-      boxShadow: isContent ? 'inset 0 1px 3px rgba(0,0,0,0.1)' : 'none',
-      whiteSpace: isContent ? 'pre-wrap' : 'normal',
-      textAlign: isContent ? 'left' : { xs: 'left', sm: 'right' },
-    }}>
-      {isArray ? (
-        value?.length > 0 ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            {value.map((item, index) => (
-              <Box key={index} sx={{ p: 2, bgcolor: 'white', borderRadius: '4px', border: '1px solid', borderColor: 'gray.200' }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
-                  Detail {index + 1}
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  Title: {item.title || 'N/A'}
-                </Typography>
-                {item.icon && (
-                  <Typography variant="body2" sx={{ mb: 1, color: 'gray.600' }}>
-                    Icon: {item.icon}
-                  </Typography>
-                )}
-                {Object.entries(item.points || {}).map(([pointKey, pointValue]) => (
-                  pointValue && (
-                    <Typography key={pointKey} variant="body2" sx={{ ml: 2, color: 'gray.700' }}>
-                      • {pointValue}
-                    </Typography>
-                  )
-                ))}
-              </Box>
-            ))}
+    <Typography
+      variant="body1"
+      sx={{
+        color: '#4A4A4A',
+        mt: isFullWidth || isContent ? 1 : 0,
+        whiteSpace: isContent ? 'pre-wrap' : 'normal',
+      }}
+    >
+      {value || 'N/A'}
+    </Typography>
+  </Box>
+);
+
+// Button Info Section
+const ButtonDetails = ({ button, label }) => (
+  <Box
+    sx={{
+      p: 2,
+      mb: 2,
+      bgcolor: '#F7F7F7',
+      borderRadius: '8px',
+      border: '1px solid #E0E0E0',
+    }}
+  >
+    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: PRIMARY_COLOR, mb: 1 }}>
+      {label}
+    </Typography>
+    <Typography variant="body2">
+      <strong>Name:</strong> {button?.name || 'N/A'}
+    </Typography>
+    <Typography variant="body2">
+      <strong>Link:</strong> {button?.link || 'N/A'}
+    </Typography>
+  </Box>
+);
+
+// Image Section
+const ImagesSection = ({ images }) => (
+  <Box sx={{ mt: 2 }}>
+    <Typography variant="h6" sx={{ color: PRIMARY_COLOR, mb: 2 }}>
+      Images
+    </Typography>
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+      {Object.entries(images || {}).map(([key, url]) =>
+        url ? (
+          <Box key={key} sx={{ textAlign: 'center', width: { xs: '100%', sm: '200px' } }}>
+            <img
+              src={url}
+              alt={key}
+              style={{
+                width: '100%',
+                height: '150px',
+                objectFit: 'cover',
+                borderRadius: '8px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              }}
+            />
+            <Typography variant="caption" sx={{ display: 'block', mt: 1, color: '#666' }}>
+              {key}
+            </Typography>
           </Box>
-        ) : (
-          <Typography variant="body2" color="text.secondary">No details available</Typography>
-        )
-      ) : (
-        <Typography variant="body1" component={isContent ? 'div' : 'span'}>
-          {value || 'N/A'}
+        ) : null
+      )}
+      {Object.keys(images || {}).length === 0 && (
+        <Typography variant="body2" color="text.secondary">
+          No images available
         </Typography>
       )}
     </Box>
   </Box>
 );
 
-const ButtonDetails = ({ button, label }) => (
-  <Box sx={{ p: 2, bgcolor: 'gray.50', borderRadius: '8px', border: '1px solid', borderColor: 'gray.200', mb: 2 }}>
-    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, color: 'gray.800' }}>
-      {label}
-    </Typography>
-    <Typography variant="body2"><strong>Name:</strong> {button?.name || 'N/A'}</Typography>
-    <Typography variant="body2"><strong>Link:</strong> {button?.link || 'N/A'}</Typography>
-  </Box>
-);
-
-const ImagesSection = ({ images, title }) => (
-  <Box sx={{ mb: 3 }}>
-    <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: 'gray.800' }}>
-      Images
-    </Typography>
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-      {Object.entries(images || {}).map(([key, url]) => (
-        url ? (
-          <Box key={key} sx={{ textAlign: 'center', width: { xs: '100%', sm: '200px' } }}>
-            <img 
-              src={url} 
-              alt={`${title} ${key}`} 
-              style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
-            />
-            <Typography variant="caption" sx={{ display: 'block', mt: 1, color: 'gray.600' }}>
-              {key}
-            </Typography>
-          </Box>
-        ) : null
-      ))}
-    </Box>
-    {Object.keys(images || {}).length === 0 && (
-      <Typography variant="body2" color="text.secondary">No images available</Typography>
-    )}
-  </Box>
-);
-
-export default function ServiceDetailsModal({ service, onClose, primaryColor }) {
-  const open = !!service;
-
+// Main Component
+export default function ServiceDetailsModal({ service, onClose }) {
   if (!service) return null;
 
-  const { data: { serviceObj, images } = {}, title, _id, createdAt, updatedAt } = service;
-  const { main_color, sub_title, paragraph, details, main_button, home_button } = serviceObj || {};
+  const {
+    data: { serviceObj, images } = {},
+    title,
+    _id
+  } = service;
+
+  const { main_color, sub_title, paragraph, details, main_button} = serviceObj || {};
 
   return (
     <Dialog
-      open={open}
+      open={!!service}
       onClose={onClose}
       fullWidth
-      maxWidth="lg"
+      maxWidth="md"
       PaperProps={{
-        sx: { 
-          borderRadius: '16px', 
-          borderTop: `6px solid ${primaryColor}`, 
-          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-          overflow: 'hidden',
-        }
+        sx: {
+          borderTop: `4px solid ${PRIMARY_COLOR}`,
+          borderRadius: '12px',
+        },
       }}
     >
-      <DialogTitle sx={{ bgcolor: primaryColor, display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: 4, py: 3 }}>
-        <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', color: 'white' }}>
-          Service Details: {title}
-        </Typography>
-        <IconButton 
-          aria-label="close"
-          onClick={onClose}
-          sx={{ color: 'white', '&:hover': { color: 'gray.200' } }}
-        >
+      {/* Header */}
+      <DialogTitle
+        sx={{
+          backgroundColor: PRIMARY_COLOR,
+          color: 'white',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Box display="flex" alignItems="center" gap={1}>
+          <ServiceIcon />
+          <Typography variant="h5" fontWeight="bold">
+            {title}
+          </Typography>
+        </Box>
+        <IconButton onClick={onClose} size="medium" sx={{ color: 'white' }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
+
+      {/* Body */}
+      <DialogContent dividers sx={{ backgroundColor: '#F9F9F9', p: 4 }}>
+        {/* Basic Info */}
+        <Box sx={{ bgcolor: 'white', p: 4, borderRadius: '12px', boxShadow: 3 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              color: PRIMARY_COLOR,
+              mb: 2,
+              borderBottom: '2px solid #eee',
+              pb: 1,
+            }}
+          >
+            Basic Information
+          </Typography>
+          <DetailRow label="ID" value={_id} />
+          <DetailRow label="Title/Slug" value={title} />
+          <DetailRow label="Main Color" value={main_color} />
+          <DetailRow label="Sub Title" value={sub_title} />
       
-      <DialogContent dividers sx={{ bgcolor: 'gray.50', p: 6, maxHeight: '80vh', overflow: 'auto' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {/* Images Section */}
-          <ImagesSection images={images} title={title} />
-          
-          {/* Main Image Highlight */}
-          {images?.['service-image'] && (
-            <Box sx={{ bgcolor: 'white', borderRadius: '12px', p: 4, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', border: '1px solid', borderColor: 'gray.100' }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: 'gray.800' }}>
-                Main Service Image
-              </Typography>
-              <img 
-                src={images['service-image']} 
-                alt={`${title} main image`} 
-                style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', borderRadius: '8px' }}
-              />
-            </Box>
+        </Box>
+
+        {/* Paragraph */}
+        {paragraph && (
+          <Box sx={{ mt: 3, bgcolor: 'white', p: 4, borderRadius: '12px', boxShadow: 3 }}>
+            <Typography
+              variant="h6"
+              sx={{ color: PRIMARY_COLOR, mb: 2, borderBottom: '2px solid #eee', pb: 1 }}
+            >
+              Main Paragraph
+            </Typography>
+            <DetailRow label="Content" value={paragraph} isFullWidth isContent />
+          </Box>
+        )}
+
+        {/* Details Section */}
+        <Box sx={{ mt: 3, bgcolor: 'white', p: 4, borderRadius: '12px', boxShadow: 3 }}>
+          <Typography
+            variant="h6"
+            sx={{ color: PRIMARY_COLOR, mb: 2, borderBottom: '2px solid #eee', pb: 1 }}
+          >
+            Details Sections ({details?.length || 0})
+          </Typography>
+
+          {details?.length > 0 ? (
+            details.map((item, index) => (
+              <Box
+                key={index}
+                sx={{
+                  mb: 2,
+                  p: 2,
+                  bgcolor: '#F7F7F7',
+                  borderRadius: '8px',
+                  border: '1px solid #E0E0E0',
+                }}
+              >
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: PRIMARY_COLOR }}>
+                  Detail {index + 1}
+                </Typography>
+                <Typography variant="body2" sx={{ mt: 0.5 }}>
+                  <strong>Title:</strong> {item.title || 'N/A'}
+                </Typography>
+                {item.icon && (
+                  <Typography variant="body2" sx={{ mt: 0.5 }}>
+                    <strong>Icon:</strong> {item.icon}
+                  </Typography>
+                )}
+                {Object.values(item.points || {}).map(
+                  (point, i) =>
+                    point && (
+                      <Typography key={i} variant="body2" sx={{ ml: 2, mt: 0.5 }}>
+                        • {point}
+                      </Typography>
+                    )
+                )}
+              </Box>
+            ))
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              No details available
+            </Typography>
           )}
+        </Box>
 
-          {/* Basic Info */}
-          <Box sx={{ bgcolor: 'white', borderRadius: '12px', p: 4, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', border: '1px solid', borderColor: 'gray.100' }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: 'gray.800' }}>
-              Basic Information
-            </Typography>
-            <DetailRow label="ID" value={_id} />
-            <DetailRow label="Title/Slug" value={title} />
-            <DetailRow label="Main Color" value={main_color} />
-            <DetailRow label="Sub Title" value={sub_title} />
-            <DetailRow label="Created At" value={createdAt ? new Date(createdAt).toLocaleString() : 'N/A'} />
-            <DetailRow label="Last Updated" value={updatedAt ? new Date(updatedAt).toLocaleString() : 'N/A'} />
-          </Box>
+        {/* Buttons */}
+        <Box sx={{ mt: 3, bgcolor: 'white', p: 4, borderRadius: '12px', boxShadow: 3 }}>
+          <Typography
+            variant="h6"
+            sx={{ color: PRIMARY_COLOR, mb: 2, borderBottom: '2px solid #eee', pb: 1 }}
+          >
+            Action Buttons
+          </Typography>
+          <ButtonDetails button={main_button} label="Main Service Button" />
+         =
+        </Box>
 
-          {/* Paragraph */}
-          {paragraph && (
-            <Box sx={{ bgcolor: 'white', borderRadius: '12px', p: 4, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', border: '1px solid', borderColor: 'gray.100' }}>
-              <DetailRow label="Main Paragraph" value={paragraph} isContent={true} />
-            </Box>
-          )}
-
-          {/* Details Sections */}
-          <Box sx={{ bgcolor: 'white', borderRadius: '12px', p: 4, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', border: '1px solid', borderColor: 'gray.100' }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: 'gray.800' }}>
-              Details Sections ({details?.length || 0})
-            </Typography>
-            <DetailRow label="All Details" value={details} isArray={true} />
-          </Box>
-
-          {/* Buttons */}
-          <Box sx={{ bgcolor: 'white', borderRadius: '12px', p: 4, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', border: '1px solid', borderColor: 'gray.100' }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 3, color: 'gray.800' }}>
-              Action Buttons
-            </Typography>
-            <ButtonDetails button={main_button} label="Main Service Button" />
-            <ButtonDetails button={home_button} label="Home Page Button" />
-          </Box>
-
-          {/* All Images (including detail icons) */}
-          <ImagesSection images={images} title={title} />
+        {/* Images */}
+        <Box sx={{ mt: 3, bgcolor: 'white', p: 4, borderRadius: '12px', boxShadow: 3 }}>
+          <ImagesSection images={images} />
         </Box>
       </DialogContent>
-      
-      <DialogActions sx={{ p: 4, borderTop: '1px solid', borderColor: 'gray.200', justifyContent: 'center', bgcolor: 'white' }}>
+
+      {/* Footer */}
+      <DialogActions sx={{ p: 3, justifyContent: 'center', backgroundColor: 'white' }}>
         <Button
           onClick={onClose}
           variant="contained"
           size="large"
           sx={{
-            backgroundColor: primaryColor,
-            "&:hover": { backgroundColor: primaryColor },
-            borderRadius: '9999px',
-            px: 6,
-            py: 1.5,
-            fontWeight: 'bold',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            backgroundColor: PRIMARY_COLOR,
+            '&:hover': { backgroundColor: HOVER_COLOR },
           }}
         >
           Close

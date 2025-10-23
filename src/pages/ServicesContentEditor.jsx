@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
+import ServicesDashboard from './ServicesDashboard';
 import DashboardLayout from '../layout/DashboardLayout';
 import Alert from '../components/ui/Alert';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -14,6 +15,8 @@ import LinkEditor from '../components/pageEditors/LinkEditor';
 
 const SECTIONS = [
     { id: 'hero-section', title: 'Hero Banner' },
+    // local entry to show the Services Dashboard inline
+    { id: 'services-dashboard', title: 'Services' },
 ];
 
 const PRIMARY_COLOR = '#ADD0B3';
@@ -30,16 +33,16 @@ const ServicesContentEditor = () => {
         isSubmitting,
         handleInputChange,
         handleFileChange,
-        handleAddItem,
-        handleRemoveItem,
         handleSubmit,
         toast,
         closeToast,
     } = form;
 
-    // Log to debug newFiles and imageUrls
-    console.log('ServicesContentEditor - newFiles:', newFiles);
-    console.log('ServicesContentEditor - imageUrls:', imageUrls);
+    // Log to debug newFiles and imageUrls (dev only)
+    import('../utils/logger').then(({ default: logger }) => {
+        logger.log('ServicesContentEditor - newFiles:', newFiles);
+        logger.log('ServicesContentEditor - imageUrls:', imageUrls);
+    });
 
     const scrollToSection = (id) => {
         const element = document.getElementById(id);
@@ -52,6 +55,14 @@ const ServicesContentEditor = () => {
     const renderSection = useMemo(() => {
         if (!pageData) {
             return null;
+        }
+
+        if (activeSection === 'services-dashboard') {
+            return (
+                <div id="services-dashboard">
+                    <ServicesDashboard />
+                </div>
+            );
         }
 
         return (
@@ -89,7 +100,7 @@ const ServicesContentEditor = () => {
                
             </Card>
         );
-    }, [activeSection, pageData, newFiles, imageUrls, handleInputChange, handleFileChange, handleAddItem, handleRemoveItem]);
+    }, [activeSection, pageData, newFiles, imageUrls, handleInputChange, handleFileChange]);
 
     if (isLoading || !pageData) {
         return (
@@ -121,30 +132,34 @@ const ServicesContentEditor = () => {
                     )}
                 </div>
                 <form onSubmit={handleSubmit} className="grid grid-cols-12 gap-8">
-                    <div className="col-span-12 md:col-span-3">
+                    <div className="col-span-12">
                         <SidebarNavigation
                             sections={SECTIONS}
                             activeSection={activeSection}
                             setActiveSection={scrollToSection}
                             primaryColor={PRIMARY_COLOR}
+                            variant="tabs"
                         />
                     </div>
-                    <div className="col-span-12 md:col-span-9 space-y-10">
+                    <div className="col-span-12 space-y-10">
                         {renderSection}
-                        <Button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className={`w-full flex justify-center items-center gap-3 text-white py-4 rounded-2xl font-bold text-xl hover:opacity-90 transition-all duration-300 shadow-xl`}
-                            style={{ backgroundColor: PRIMARY_COLOR }}
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <LoadingSpinner color="white" /> Saving Changes...
-                                </>
-                            ) : (
-                                'Save Services Content'
-                            )}
-                        </Button>
+                        {/* Only show save button for editable sections (not the services dashboard) */}
+                        {activeSection !== 'services-dashboard' && (
+                            <Button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className={`w-full flex justify-center items-center gap-3 text-white py-4 rounded-2xl font-bold text-xl hover:opacity-90 transition-all duration-300 shadow-xl`}
+                                style={{ backgroundColor: PRIMARY_COLOR }}
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <LoadingSpinner color="white" /> Saving Changes...
+                                    </>
+                                ) : (
+                                    'Save Services Content'
+                                )}
+                            </Button>
+                        )}
                     </div>
                 </form>
             </div>

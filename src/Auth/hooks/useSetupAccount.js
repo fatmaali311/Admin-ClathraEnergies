@@ -1,17 +1,27 @@
 // src/hooks/useSetupAccount.js
 import { useCallback } from 'react';
 import { completeProfile } from '../services/userService';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { formatAuthError } from '../utils/authHelpers';
 
+
 export function useSetupAccount() {
-  const { token } = useParams();
+  const { search } = useLocation();
+  const query = new URLSearchParams(search);
+  const token = query.get('token');
   const navigate = useNavigate();
 
   const submitSetupAccount = useCallback(
     async (values, { setSubmitting, setStatus }) => {
       setSubmitting(true);
       setStatus(null);
+
+      // Early exit if token is missing
+      if (!token) {
+        setStatus({ error: formatAuthError('Missing setup token. Please use the full link.') });
+        setSubmitting(false);
+        return { ok: false, status: 400, data: null };
+      }
 
       try {
         const body = {
@@ -38,8 +48,11 @@ export function useSetupAccount() {
         setSubmitting(false);
       }
     },
-    [token, navigate]
+    [token, navigate],
   );
 
-  return { submitSetupAccount };
+  return {
+    submitSetupAccount,
+    token,
+  };
 }

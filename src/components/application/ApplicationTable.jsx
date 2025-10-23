@@ -1,81 +1,66 @@
 import React, { useState } from "react";
+import { useToast } from '../../hooks/useToast';
 import {
-  Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, Box,
-  IconButton, Typography, CircularProgress, Button, Chip,
-  Select, MenuItem, FormControl, InputLabel
+  FormControl, InputLabel, Select, MenuItem, Chip,
+  IconButton, Typography, CircularProgress, Box
 } from "@mui/material";
-import { Visibility, Delete, Refresh as RefreshIcon, CheckCircle, Cancel } from "@mui/icons-material";
+import { ManagedTable } from '../Common';
+import { Visibility, Delete } from "@mui/icons-material";
+import ConfirmDialog from '../Common/ConfirmDialog';
 import { updateApplicationStatus } from "../../services/applicationService";
 import { useAuth } from "../../contexts/AuthContext";
-
-const PRIMARY_COLOR = "#ADD0B3";
-const HOVER_COLOR = "#8CB190";
+import { PRIMARY_COLOR } from '../Common/styles';
 
 const statusColors = {
-    pending: 'warning',
-    approved: 'success',
-    rejected: 'error',
-    contacted: 'info',
+  pending: 'warning',
+  approved: 'success',
+  rejected: 'error',
+  contacted: 'info',
 };
 
 // Component for Status change (handles PATCH request directly)
 const StatusSelector = ({ applicationId, currentStatus, refetchApplications }) => {
-    const { token } = useAuth();
-    const [status, setStatus] = useState(currentStatus);
-    const [loading, setLoading] = useState(false);
+  const { token } = useAuth();
+  const { showToast } = useToast();
+  const [status, setStatus] = useState(currentStatus);
+  const [loading, setLoading] = useState(false);
 
-    const handleStatusChange = async (event) => {
-        const newStatus = event.target.value;
-        setLoading(true);
-        try {
-            await updateApplicationStatus(token, applicationId, newStatus);
-            setStatus(newStatus);
-            refetchApplications(); // Refresh the whole list for consistency
-        } catch (error) {
-            alert(`Failed to update status: ${error.message}`);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleStatusChange = async (event) => {
+    const newStatus = event.target.value;
+    setLoading(true);
+    try {
+      await updateApplicationStatus(token, applicationId, newStatus);
+      setStatus(newStatus);
+      refetchApplications();
+    } catch (error) {
+      showToast(`Failed to update status: ${error.message}`, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Status</InputLabel>
-            <Select
-                value={status}
-                onChange={handleStatusChange}
-                label="Status"
-                disabled={loading}
-                sx={{ 
-                    bgcolor: 'white', 
-                    '&.Mui-disabled': { opacity: 0.7, '& .MuiCircularProgress-root': { color: PRIMARY_COLOR } }
-                }}
-            >
-                {['pending', 'approved', 'rejected', 'contacted'].map((s) => (
-                    <MenuItem key={s} value={s}>
-                        <Chip label={s.toUpperCase()} size="small" color={statusColors[s]} />
-                    </MenuItem>
-                ))}
-            </Select>
-            {loading && (
-                <CircularProgress 
-                    size={24} 
-                    sx={{ 
-                        color: PRIMARY_COLOR, 
-                        position: 'absolute', 
-                        top: '50%', 
-                        left: '50%', 
-                        marginTop: '-12px', 
-                        marginLeft: '-12px',
-                        zIndex: 10
-                    }} 
-                />
-            )}
-        </FormControl>
-    );
+  return (
+    <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
+      <InputLabel>Status</InputLabel>
+      <Select
+        value={status}
+        onChange={handleStatusChange}
+        label="Status"
+        disabled={loading}
+        sx={{ bgcolor: 'white' }}
+      >
+        {['pending', 'approved', 'rejected', 'contacted'].map((s) => (
+          <MenuItem key={s} value={s}>
+            <Chip label={s.toUpperCase()} size="small" color={statusColors[s]} />
+          </MenuItem>
+        ))}
+      </Select>
+      {loading && (
+        <CircularProgress size={24} sx={{ color: PRIMARY_COLOR, position: 'absolute', top: '50%', left: '50%', marginTop: '-12px', marginLeft: '-12px', zIndex: 10 }} />
+      )}
+    </FormControl>
+  );
 };
-
 
 export default function ApplicationTable({
   applications,
@@ -85,109 +70,91 @@ export default function ApplicationTable({
   onRefresh,
   filterStatus,
   onFilterChange
+  , positions = [], filterPositionId = '', onPositionFilterChange = () => {}
 }) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [toDeleteApp, setToDeleteApp] = useState(null);
 
-  if (loading) {
-    return (
-      <Box 
-        className="text-center p-10 bg-white rounded-xl shadow-md" 
-        sx={{ color: PRIMARY_COLOR, borderRadius: "12px" }}
-      >
-        <CircularProgress color="inherit" size={24} sx={{ mr: 2 }} />
-        <Typography component="span">Loading job applications...</Typography>
-      </Box>
-    );
-  }
+  const handleDeleteClick = (app) => {
+    setToDeleteApp(app);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    setConfirmOpen(false);
+    if (toDeleteApp) onDelete(toDeleteApp);
+    setToDeleteApp(null);
+  };
+
+  const columns = [
+    { key: 'applicant', label: 'Applicant', render: (r) => `${r.firstName} ${r.lastName}` },
+    { key: 'email', label: 'Email', render: (r) => r.email },
+    { key: 'location', label: 'Location', className: 'hidden sm:table-cell', render: (r) => r.location || 'N/A' },
+    { key: 'submitted', label: 'Submitted', className: 'hidden md:table-cell', render: (r) => new Date(r.createdAt).toLocaleDateString() },
+    { key: 'status', label: 'Status', render: (r) => (<StatusSelector applicationId={r._id} currentStatus={r.status} refetchApplications={onRefresh} />) },
+  ];
 
   return (
-    <TableContainer 
-      component={Paper} 
-      elevation={3} 
-      sx={{ borderRadius: "12px" }}
-    >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
-            <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
-                <InputLabel>Filter by Status</InputLabel>
-                <Select
-                    value={filterStatus}
-                    onChange={(e) => onFilterChange(e.target.value)}
-                    label="Filter by Status"
-                >
-                    <MenuItem value="">All Applications</MenuItem>
-                    {['pending', 'approved', 'rejected', 'contacted'].map((s) => (
-                        <MenuItem key={s} value={s}>
-                            <Chip label={s.toUpperCase()} size="small" color={statusColors[s]} />
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
-            <Button
-                onClick={onRefresh}
-                startIcon={<RefreshIcon />}
-                variant="outlined"
-                disabled={loading}
-                sx={{
-                    color: PRIMARY_COLOR,
-                    borderColor: PRIMARY_COLOR,
-                    "&:hover": { borderColor: HOVER_COLOR, bgcolor: 'gray.50' },
-                }}
+    <>
+    <ManagedTable
+      columns={columns}
+      rows={applications}
+      loading={loading}
+      onRefresh={onRefresh}
+      leftHeader={(
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Filter by Status</InputLabel>
+            <Select
+              value={filterStatus}
+              onChange={(e) => onFilterChange(e.target.value)}
+              label="Filter by Status"
             >
-                Refresh List
-            </Button>
-        </Box>
+              <MenuItem value="">All Applications</MenuItem>
+              {['pending', 'approved', 'rejected', 'contacted'].map((s) => (
+                <MenuItem key={s} value={s}>
+                  <Chip label={s.toUpperCase()} size="small" color={statusColors[s]} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-      <Table>
-        <TableHead>
-          <TableRow
-            sx={{
-              backgroundColor: PRIMARY_COLOR,
-              "& th": { color: "white", fontWeight: "bold" },
-            }}
-          >
-            <TableCell>Applicant</TableCell>
-            <TableCell>Email</TableCell>
-            <TableCell className="hidden sm:table-cell">Location</TableCell>
-            <TableCell className="hidden md:table-cell">Submitted</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell align="center">Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {applications.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={6} sx={{ textAlign: 'center', py: 8, color: 'gray.500' }}>
-                No applications found {filterStatus && `with status: ${filterStatus}`}.
-              </TableCell>
-            </TableRow>
-          ) : (
-            applications.map((row) => (
-              <TableRow key={row._id} hover className="hover:bg-gray-50 transition duration-150 ease-in-out">
-                <TableCell className="font-medium text-gray-900">{row.firstName} {row.lastName}</TableCell>
-                <TableCell className="text-gray-600">{row.email}</TableCell>
-                <TableCell className="text-gray-600 hidden sm:table-cell">{row.location || 'N/A'}</TableCell>
-                <TableCell className="text-gray-600 text-xs hidden md:table-cell">
-                    {new Date(row.createdAt).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                    <StatusSelector 
-                        applicationId={row._id}
-                        currentStatus={row.status}
-                        refetchApplications={onRefresh}
-                    />
-                </TableCell>
-                <TableCell align="center">
-                  <IconButton color="primary" size="small" onClick={() => onView(row)} aria-label={`View ${row.firstName}`}>
-                    <Visibility fontSize="small" />
-                  </IconButton>
-                  <IconButton color="error" size="small" onClick={() => onDelete(row)} aria-label={`Delete ${row.firstName}`}>
-                    <Delete fontSize="small" />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          <FormControl variant="outlined" size="small" sx={{ minWidth: 220 }}>
+            <InputLabel>Filter by Position</InputLabel>
+            <Select
+              value={filterPositionId}
+              onChange={(e) => onPositionFilterChange(e.target.value)}
+              label="Filter by Position"
+            >
+              <MenuItem value="">All Positions</MenuItem>
+              <MenuItem value="none">No Position</MenuItem>
+              {positions.map((p) => (
+                <MenuItem key={p._id} value={p._id}>{p.name} {p.location ? `(${p.location})` : ''}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </div>
+      )}
+      renderRow={(row) => (
+        <>
+          <IconButton color="primary" size="small" onClick={() => onView(row)} aria-label={`View ${row.firstName}`}>
+            <Visibility fontSize="small" />
+          </IconButton>
+          <IconButton color="error" size="small" onClick={() => handleDeleteClick(row)} aria-label={`Delete ${row.firstName}`}>
+            <Delete fontSize="small" />
+          </IconButton>
+        </>
+      )}
+    />
+    <ConfirmDialog
+      open={confirmOpen}
+      onClose={() => setConfirmOpen(false)}
+      onConfirm={handleConfirmDelete}
+      title="Delete Application"
+      message={toDeleteApp ? `Are you sure you want to delete the application from ${toDeleteApp.firstName} ${toDeleteApp.lastName}?` : 'Are you sure?'}
+      confirmLabel="Delete"
+      loading={false}
+    />
+    </>
   );
 }

@@ -70,6 +70,11 @@ export default function ApplicationDetailsModal({ open, onClose, application }) 
             <DetailRow label="Email" value={application.email} />
             <DetailRow label="Phone" value={application.phone} />
             <DetailRow label="Location" value={application.location} />
+            {/* Position: may be embedded as application.position or just positionId */}
+            <DetailRow
+                label="Position"
+                value={application.position ? `${application.position.name}${application.position.location ? ` (${application.position.location})` : ''}${application.position.type ? ` — ${application.position.type}` : ''}` : (application.positionId ? application.positionId : 'No Position')}
+            />
             <DetailRow label="Expected Salary" value={application.expectedSalary ? `$${application.expectedSalary.toLocaleString()}` : 'N/A'} />
             <DetailRow label="Available From" value={application.availableFrom ? new Date(application.availableFrom).toLocaleDateString() : 'N/A'} />
             <DetailRow label="Submitted On" value={new Date(application.createdAt).toLocaleString()} />

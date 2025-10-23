@@ -9,7 +9,7 @@ import { getApplications } from "../services/applicationService";
  * @param {string} status - Filter status ('pending', 'approved', etc.)
  * @returns {{applications: object[], loading: boolean, totalPages: number, totalApplications: number, refetchApplications: () => void}}
  */
-export const useApplications = (token, page = 1, limit = 10, status = '') => {
+export const useApplications = (token, page = 1, limit = 10, status = '', positionId = '') => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
@@ -22,7 +22,7 @@ export const useApplications = (token, page = 1, limit = 10, status = '') => {
   useEffect(() => {
     const fetchApplications = async () => {
       setLoading(true);
-      const data = await getApplications(token, page, limit, status);
+      const data = await getApplications(token, page, limit, status, positionId);
 
       if (data && data.data) {
         setApplications(data.data);
@@ -38,7 +38,7 @@ export const useApplications = (token, page = 1, limit = 10, status = '') => {
     };
 
     if (token) fetchApplications();
-  }, [token, page, limit, status, refreshToggle]);
+  }, [token, page, limit, status, positionId, refreshToggle]);
 
   return { applications, loading, totalPages, totalApplications: total, refetchApplications };
 };

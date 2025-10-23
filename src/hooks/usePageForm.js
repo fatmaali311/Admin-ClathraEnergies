@@ -79,7 +79,7 @@ const usePageForm = (pageTitle) => {
                 });
                 setPageData(updatedPageData);
                 setImageUrls(data.images || {});
-                console.log(`usePageForm - Loaded imageUrls for ${pageTitle}:`, data.images);
+                    import('../utils/logger').then(({ default: logger }) => logger.log(`usePageForm - Loaded imageUrls for ${pageTitle}:`, data.images));
             } else {
                 showToast(`Failed to load page "${pageTitle}". Using default schema.`, 'warning');
             }
@@ -92,7 +92,7 @@ const usePageForm = (pageTitle) => {
         // Handle both DOM events and custom inputs
         const { name, value } = e.target || e;
         if (!name) {
-            console.error('handleInputChange: No name provided', e);
+                import('../utils/logger').then(({ default: logger }) => logger.error('handleInputChange: No name provided', e));
             return;
         }
           setPageData((prevData) => {
@@ -114,7 +114,7 @@ const usePageForm = (pageTitle) => {
     const handleFileChange = useCallback((e) => {
         const file = e.target.files[0];
         if (file) {
-            console.log(`usePageForm - File selected for ${e.target.name}:`, file);
+                import('../utils/logger').then(({ default: logger }) => logger.log(`usePageForm - File selected for ${e.target.name}:`, file));
             setNewFiles((prev) => ({ ...prev, [e.target.name]: file }));
         }
     }, []);
@@ -132,13 +132,11 @@ const usePageForm = (pageTitle) => {
 
         const arrayKey = keys[keys.length - 1];
 
-        // ✅ تأكد أن القيمة Array أو فضيها لو undefined
         if (!Array.isArray(temp[arrayKey])) {
-            console.warn(`Expected array at path "${arrayPath}", got:`, temp[arrayKey]);
+                import('../utils/logger').then(({ default: logger }) => logger.warn(`Expected array at path "${arrayPath}", got:`, temp[arrayKey]));
             temp[arrayKey] = [];
         }
 
-        // ✅ ضمان وجود عنصر عند الفهرس
         const array = [...temp[arrayKey]];
         array[index] = { ...(array[index] || {}), [field]: value };
         temp[arrayKey] = array;
@@ -173,7 +171,7 @@ const handleAddItem = useCallback((arrayPath, defaultItem) => {
     const handleRemoveItem = useCallback((arrayPath, index) => {
         setPageData((prevData) => {
             if (!arrayPath) {
-                console.error('Invalid array path provided to handleRemoveItem:', arrayPath);
+                    import('../utils/logger').then(({ default: logger }) => logger.error('Invalid array path provided to handleRemoveItem:', arrayPath));
                 return prevData;
             }
             const keys = arrayPath.split('.');
@@ -203,7 +201,7 @@ const handleAddItem = useCallback((arrayPath, defaultItem) => {
             formData.append('title', pageTitle);
 
             Object.entries(newFiles).forEach(([key, file]) => {
-                console.log(`usePageForm - Submitting file for ${key}:`, file);
+                    import('../utils/logger').then(({ default: logger }) => logger.log(`usePageForm - Submitting file for ${key}:`, file));
                 formData.append(key, file);
             });
 
@@ -220,7 +218,7 @@ const handleAddItem = useCallback((arrayPath, defaultItem) => {
                     });
                     setPageData(updatedPageData);
                     setImageUrls(newData.images || {});
-                    console.log(`usePageForm - Updated imageUrls for ${pageTitle}:`, newData.images);
+                        import('../utils/logger').then(({ default: logger }) => logger.log(`usePageForm - Updated imageUrls for ${pageTitle}:`, newData.images));
                 }
                 setNewFiles({});
             } else {

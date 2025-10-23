@@ -3,25 +3,53 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { logoutRequest, fetchUserProfile } from '../Auth/services/authService';
 const AuthContext = createContext();
 
+// Create the initial auth state
+const initialState = {
+    token: localStorage.getItem('token') || null,
+    user: null,
+    loading: true
+};
+
 export function AuthProvider({ children }) {
-    const [token, setToken] = useState(localStorage.getItem('token') || null);
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true); // Must be true initially
+    const [token, setToken] = useState(initialState.token);
+    const [user, setUser] = useState(initialState.user);
+    const [loading, setLoading] = useState(initialState.loading);
 
     const login = useCallback((userData, tokenValue) => {
         setUser(userData || null);
         setToken(tokenValue);
-        // FIX: Standardize saving to 'token' only
         if (tokenValue) localStorage.setItem('token', tokenValue);
     }, []);
 
     const logout = useCallback(async () => {
+        // Clear storage first
+        localStorage.clear();
+        sessionStorage.clear();
+
+        // Clear state
         setUser(null);
         setToken(null);
-        // FIX: Clear 'token' only
+        setLoading(false);
+
+        try {
+            // Attempt backend logout
+            await logoutRequest();
+        } catch (err) {
+            console.error('Logout API error:', err);
+        }
+
+        // Double check storage is cleared
+        localStorage.clear();
+        sessionStorage.clear();
+
+        // Force remove specific items just in case
         localStorage.removeItem('token');
-        await logoutRequest().catch(() => console.warn('Logout API warning'));
+        sessionStorage.removeItem('token');
+        
+        // Force a complete page refresh
+        window.location.replace('/login');
     }, []);
+
 
     // FIX: Logic to fetch user profile using the token on page refresh
     useEffect(() => {

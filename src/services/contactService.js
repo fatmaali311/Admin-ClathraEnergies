@@ -53,3 +53,33 @@ export const updateContactReadStatus = async (token, id, isRead) => {
     return null;
   }
 };
+
+// GET contact statistics (Admins only)
+export const getContactStatistics = async (token, year = null, month = null) => {
+  try {
+    let url = `${API_BASE_URL}/contact-us/statistics`;
+    const params = [];
+    if (year != null) params.push(`year=${year}`);
+    if (month != null) params.push(`month=${month}`);
+    if (params.length) url += `?${params.join('&')}`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('❌ Failed to fetch contact statistics:', response.status, errText);
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('❌ Error fetching contact statistics:', error);
+    return null;
+  }
+};

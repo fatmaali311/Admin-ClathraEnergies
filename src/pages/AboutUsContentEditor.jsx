@@ -44,19 +44,17 @@ const AboutUsContentEditor = () => {
         if (!pageData) {
             return null; // Prevent rendering until pageData is available
         }
-
-        const sectionProps = { form, activeSection, PRIMARY_COLOR };
         switch (activeSection) {
             case 'hero-section':
-                return <AboutHeroSectionEditor {...sectionProps} />;
+                return <AboutHeroSectionEditor form={form} activeSection={activeSection} PRIMARY_COLOR={PRIMARY_COLOR} />;
             case 'company-purpose':
-                return <CompanyPurposeSectionEditor {...sectionProps} />;
+                return <CompanyPurposeSectionEditor form={form} activeSection={activeSection} PRIMARY_COLOR={PRIMARY_COLOR} />;
             case 'strategic-objectives':
-                return <ObjectivesSectionEditor {...sectionProps} />;
+                return <ObjectivesSectionEditor form={form} activeSection={activeSection} PRIMARY_COLOR={PRIMARY_COLOR} />;
             default:
                 return null;
         }
-    }, [activeSection, form, pageData]);
+    }, [activeSection, pageData, form]);
 
     if (isLoading || !pageData) {
         return (
@@ -88,15 +86,16 @@ const AboutUsContentEditor = () => {
                     )}
                 </div>
                 <form onSubmit={handleSubmit} className="grid grid-cols-12 gap-8">
-                    <div className="col-span-12 md:col-span-3">
+                    <div className="col-span-12">
                         <SidebarNavigation
                             sections={SECTIONS}
                             activeSection={activeSection}
                             setActiveSection={scrollToSection}
                             primaryColor={PRIMARY_COLOR}
+                            variant="tabs"
                         />
                     </div>
-                    <div className="col-span-12 md:col-span-9 space-y-10">
+                    <div className="col-span-12 space-y-10">
                         {renderSection}
                         <Button
                             type="submit"

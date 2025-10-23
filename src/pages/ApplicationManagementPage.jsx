@@ -3,10 +3,11 @@ import DashboardLayout from '../layout/DashboardLayout'; // From your layout
 import Toast from '../components/ui/Toast'; // From your layout
 import { useAuth } from "../contexts/AuthContext";
 import { useApplications } from "../hooks/useApplications";
+import { usePositions } from "../hooks/usePositions";
 import { useToast } from "../hooks/useToast"; // NEW
 import ApplicationTable from "../components/application/ApplicationTable";
 import ApplicationDetailsModal from "../components/application/ApplicationDetailsModal";
-import ConfirmDeleteModal from "../components/ui/ConfirmDeleteModal"; // NEW
+import { ConfirmDialog } from "../components/Common/ConfirmDialog";
 import { deleteApplication } from "../services/applicationService";
 import { Pagination, Box, Typography } from "@mui/material";
 
@@ -18,6 +19,7 @@ export default function ApplicationManagementPage() {
 
   const [page, setPage] = useState(1);
   const [filterStatus, setFilterStatus] = useState('');
+  const [filterPositionId, setFilterPositionId] = useState('');
   const [viewingApplication, setViewingApplication] = useState(null);
   
   // Delete state
@@ -25,8 +27,11 @@ export default function ApplicationManagementPage() {
   const [applicationToDelete, setApplicationToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Fetch positions for position filter dropdown (small page, no pagination here)
+  const { positions: allPositions = [] } = usePositions(token, 1, 100);
+
   const { applications, loading, totalPages, totalApplications, refetchApplications } =
-    useApplications(token, page, 10, filterStatus);
+    useApplications(token, page, 10, filterStatus, filterPositionId);
 
   // --- Delete Handlers (using Modal) ---
 
@@ -96,6 +101,9 @@ export default function ApplicationManagementPage() {
           onRefresh={refetchApplications}
           filterStatus={filterStatus}
           onFilterChange={handleFilterChange}
+          positions={allPositions}
+          filterPositionId={filterPositionId}
+          onPositionFilterChange={(v) => { setFilterPositionId(v); setPage(1); }}
         />
 
         {/* --- Pagination --- */}
@@ -128,13 +136,15 @@ export default function ApplicationManagementPage() {
         application={viewingApplication}
       /> 
 
-      <ConfirmDeleteModal
+      <ConfirmDialog
         open={deleteConfirmOpen}
-        onClose={setDeleteConfirmOpen}
+        onClose={(v) => setDeleteConfirmOpen(!!v)}
         onConfirm={handleConfirmDelete}
-        itemType="Application"
-        itemName={applicationToDelete ? `${applicationToDelete.firstName} ${applicationToDelete.lastName}` : ''}
-        isDeleting={isDeleting}
+        title={`Confirm Deletion`}
+        message={`Are you sure you want to delete the application from ${applicationToDelete ? `${applicationToDelete.firstName} ${applicationToDelete.lastName}` : ''}?`}
+        confirmLabel={`Delete Application`}
+        cancelLabel={`Cancel`}
+        loading={isDeleting}
       />
       
       {/* Your custom Toast component */}

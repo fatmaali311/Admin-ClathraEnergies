@@ -7,11 +7,9 @@ import {
   DialogTitle, DialogContent, DialogActions, IconButton, Button, Typography, Box,
   CircularProgress, 
 } from "@mui/material";
+import { ManagedTable } from '../Common';
 import { Visibility, Close as CloseIcon, MarkEmailRead, MarkEmailUnread, Refresh as RefreshIcon } from "@mui/icons-material"; // Import RefreshIcon
-
-// --- Constants (Matching UserManagement.jsx) ---
-const PRIMARY_COLOR = "#ADD0B3";
-const HOVER_COLOR = "#8CB190";
+import { PRIMARY_COLOR, HOVER_COLOR } from '../Common/styles';
 
 // Reusable component to apply styling based on read status (No change)
 const ReadStatusIndicator = ({ isRead }) => (
@@ -74,11 +72,9 @@ export default function ContactTable({ contacts, loading, refetchContacts }) {
   
   // Handler for opening the modal. Should mark as read if currently unread. (No change)
   const handleViewContact = async (contact) => {
-      setSelectedContact(contact);
-      
-      if (!contact.isRead) {
-          await handleToggleReadStatus(contact._id, false);
-      }
+    // Open modal to view contact details. Do NOT auto-toggle read status here.
+    // The user can explicitly mark Read/Unread using the button in the modal.
+    setSelectedContact(contact);
   };
 
   if (loading) {
@@ -95,19 +91,31 @@ export default function ContactTable({ contacts, loading, refetchContacts }) {
 
   return (
     <>
-      {/* --- Contact Table --- */}
-      <TableContainer 
-        component={Paper} 
-        elevation={3} 
-        sx={{ borderRadius: "12px" }}
-      >
-        {/* --- Refresh Button --- */}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
+      <ManagedTable
+        columns={[
+          { key: 'status', label: 'Status', render: (r) => (
+            updateLoadingId === r._id ? (<CircularProgress size={20} color="primary" />) : (
+              <IconButton size="small" onClick={() => handleToggleReadStatus(r._id, r.isRead)} aria-label={r.isRead ? 'Mark as unread' : 'Mark as read'}>
+                {r.isRead ? <MarkEmailRead color="success" fontSize="small" /> : <MarkEmailUnread color="error" fontSize="small" />}
+              </IconButton>
+            )
+          )},
+          { key: 'fullName', label: 'Full Name', render: (r) => r.fullName },
+          { key: 'email', label: 'Email', render: (r) => r.email },
+          { key: 'organization', label: 'Organization', className: 'hidden sm:table-cell', render: (r) => r.organization || 'N/A' },
+          { key: 'interest', label: 'Interest', className: 'hidden md:table-cell', render: (r) => r.areaOfInterest || 'N/A' },
+          { key: 'submitted', label: 'Submitted At', className: 'hidden sm:table-cell', render: (r) => new Date(r.createdAt).toLocaleString() },
+        ]}
+        rows={contacts}
+        loading={loading}
+        onRefresh={refetchContacts}
+        customHeader={(
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
             <Button
               onClick={refetchContacts}
               startIcon={<RefreshIcon />}
               variant="outlined"
-              disabled={loading} // Disable refresh while loading data
+              disabled={loading}
               sx={{
                 color: PRIMARY_COLOR,
                 borderColor: PRIMARY_COLOR,
@@ -118,86 +126,22 @@ export default function ContactTable({ contacts, loading, refetchContacts }) {
             >
               Refresh List
             </Button>
-        </Box>
-        
-        <Table>
-          <TableHead>
-            <TableRow
-              sx={{
-                backgroundColor: PRIMARY_COLOR,
-                "& th": { color: "white", fontWeight: "bold" },
-              }}
-            >
-              <TableCell>Status</TableCell> 
-              <TableCell>Full Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell className="hidden sm:table-cell">Organization</TableCell>
-              <TableCell className="hidden md:table-cell">Interest</TableCell>
-              <TableCell className="hidden sm:table-cell">Submitted At</TableCell>
-              <TableCell align="center">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {contacts.map((row) => {
-              const rowUpdateLoading = updateLoadingId === row._id;
-              
-              return (
-                <TableRow 
-                  key={row._id} 
-                  hover 
-                  className="hover:bg-gray-50 transition duration-150 ease-in-out"
-                  sx={{ backgroundColor: row.isRead ? 'inherit' : '#FFFBE6' }}
-                >
-                  {/* Status Cell */}
-                  <TableCell>
-                    {rowUpdateLoading ? (
-                      <CircularProgress size={20} color="primary" />
-                    ) : (
-                      <IconButton
-                          size="small"
-                          onClick={() => handleToggleReadStatus(row._id, row.isRead)}
-                          disabled={rowUpdateLoading}
-                          aria-label={row.isRead ? 'Mark as unread' : 'Mark as read'}
-                      >
-                          {row.isRead ? 
-                            <MarkEmailRead color="success" fontSize="small" /> : 
-                            <MarkEmailUnread color="error" fontSize="small" />
-                          }
-                      </IconButton>
-                    )}
-                  </TableCell>
-                  
-                  <TableCell className="font-medium text-gray-900">{row.fullName}</TableCell>
-                  <TableCell className="text-gray-600">{row.email}</TableCell>
-                  <TableCell className="text-gray-600 hidden sm:table-cell">{row.organization || 'N/A'}</TableCell>
-                  <TableCell className="text-gray-600 hidden md:table-cell">{row.areaOfInterest || 'N/A'}</TableCell>
-                  <TableCell className="text-gray-600 text-xs hidden sm:table-cell">
-                    {new Date(row.createdAt).toLocaleString()}
-                  </TableCell>
-                  <TableCell align="center">
-                    <IconButton
-                      color="primary"
-                      size="small"
-                      onClick={() => handleViewContact(row)} 
-                      aria-label={`View details for ${row.fullName}`}
-                    >
-                      <Visibility fontSize="small" />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-        
-        {contacts.length === 0 && (
+          </Box>
+        )}
+        renderRow={(row) => (
+          <IconButton color="primary" size="small" onClick={() => handleViewContact(row)} aria-label={`View details for ${row.fullName}`}>
+            <Visibility fontSize="small" />
+          </IconButton>
+        )}
+        getRowSx={(r) => ({ backgroundColor: r.isRead ? 'inherit' : '#FFFBE6' })}
+        renderEmpty={() => (
           <div className="text-center py-8 text-lg text-gray-500 bg-white rounded-b-xl">
             <p>No submissions found 😔</p>
           </div>
         )}
-      </TableContainer>
+      />
 
-      {/* --- Modal (Dialog) - No Change --- */}
+  {/* --- Modal (Dialog) - No Change --- */}
       <Dialog
         open={!!selectedContact}
         onClose={() => setSelectedContact(null)}
@@ -205,7 +149,7 @@ export default function ContactTable({ contacts, loading, refetchContacts }) {
         maxWidth="sm"
         PaperProps={{
           className: "rounded-2xl shadow-2xl border-t-4 border-blue-500 overflow-hidden",
-          sx: { borderTopColor: PRIMARY_COLOR } 
+          sx: { borderTopColor: PRIMARY_COLOR }
         }}
       >
         <DialogTitle className="flex justify-between items-center p-6" sx={{ backgroundColor: PRIMARY_COLOR }}>
@@ -241,35 +185,35 @@ export default function ContactTable({ contacts, loading, refetchContacts }) {
         </DialogContent>
         <DialogActions className="p-4 border-t border-gray-200 justify-center bg-white">
             {selectedContact && (
-                <Button
-                    onClick={() => handleToggleReadStatus(selectedContact._id, selectedContact.isRead)}
-                    variant="outlined"
-                    size="large"
-                    disabled={updateLoadingId === selectedContact._id}
-                    startIcon={selectedContact.isRead ? <MarkEmailUnread /> : <MarkEmailRead />}
-                    sx={{
-                        borderColor: PRIMARY_COLOR,
-                        color: PRIMARY_COLOR,
-                        '&:hover': { borderColor: HOVER_COLOR, color: HOVER_COLOR },
-                        marginRight: '1rem',
-                        position: 'relative',
-                    }}
-                >
-                    {selectedContact.isRead ? 'Mark as Unread' : 'Mark as Read'}
-                    {updateLoadingId === selectedContact._id && (
-                        <CircularProgress
-                            size={24}
-                            sx={{
-                                color: PRIMARY_COLOR,
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                marginTop: '-12px',
-                                marginLeft: '-12px',
-                            }}
-                        />
-                    )}
-                </Button>
+        <Button
+          onClick={() => handleToggleReadStatus(selectedContact._id, selectedContact.isRead)}
+          variant="outlined"
+          size="large"
+          disabled={updateLoadingId === selectedContact._id}
+          startIcon={selectedContact.isRead ? <MarkEmailUnread /> : <MarkEmailRead />}
+          sx={{
+            borderColor: PRIMARY_COLOR,
+            color: PRIMARY_COLOR,
+            '&:hover': { borderColor: HOVER_COLOR, color: HOVER_COLOR },
+            marginRight: '1rem',
+            position: 'relative',
+          }}
+        >
+          {selectedContact.isRead ? 'Mark as Unread' : 'Mark as Read'}
+          {updateLoadingId === selectedContact._id && (
+            <CircularProgress
+              size={24}
+              sx={{
+                color: PRIMARY_COLOR,
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                marginTop: '-12px',
+                marginLeft: '-12px',
+              }}
+            />
+          )}
+        </Button>
             )}
           <Button
             onClick={() => setSelectedContact(null)}

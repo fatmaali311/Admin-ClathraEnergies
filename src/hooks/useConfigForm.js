@@ -5,6 +5,8 @@ const INITIAL_CONFIG = {
   name: '',
   mainColor: '',
   secondaryColor: '',
+  titleColor: '',       
+  subtitleColor: '',    
   contactInfo: { },
   socialLinks: [],
   workingHours: [],
@@ -13,7 +15,9 @@ const INITIAL_CONFIG = {
     secondaryLogoUrl: '',
     mainVideoUrl: '',
   },
+  copyright: '',
 };
+
 
 const useConfigForm = (token) => {
   const [config, setConfig] = useState(INITIAL_CONFIG);

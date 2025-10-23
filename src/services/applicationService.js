@@ -12,11 +12,14 @@ const getHeaders = (token, contentType = "application/json") => {
 };
 
 // GET all applications (Admins only)
-export const getApplications = async (token, page = 1, limit = 10, status = '') => {
+export const getApplications = async (token, page = 1, limit = 10, status = '', positionId = '') => {
   try {
     let url = `${API_BASE_URL}/applications?page=${page}&limit=${limit}`;
     if (status) {
       url += `&status=${status}`;
+    }
+    if (positionId) {
+      url += `&positionId=${encodeURIComponent(positionId)}`;
     }
 
     const response = await fetch(url, {
@@ -99,6 +102,33 @@ export const deleteApplication = async (token, id) => {
   } catch (error) {
     console.error("❌ Error deleting application:", error);
     throw error;
+  }
+};
+
+// GET applications statistics (Admins only)
+export const getApplicationsStatistics = async (token, year = null, month = null) => {
+  try {
+    let url = `${API_BASE_URL}/applications/statistics`;
+    const params = [];
+    if (year != null) params.push(`year=${year}`);
+    if (month != null) params.push(`month=${month}`);
+    if (params.length) url += `?${params.join('&')}`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: getHeaders(token, 'application/json'),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('❌ Failed to fetch applications statistics:', response.status, errText);
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('❌ Error fetching applications statistics:', error);
+    return null;
   }
 };
 

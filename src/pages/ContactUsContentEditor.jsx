@@ -10,12 +10,17 @@ import usePageForm from '../hooks/usePageForm';
 import MediaUpload from '../components/ui/MediaUpload';
 import InputGroup from '../components/ui/InputGroup';
 import Card from '../components/ui/Card';
+import ContactTable from '../components/contact/ContactTable';
+import { useContacts } from '../hooks/useContacts';
+import { useAuth } from '../contexts/AuthContext';
 
 const SECTIONS = [
     { id: 'hero-section', title: 'Hero Banner' },
     { id: 'paragraph-section', title: 'Paragraph' },
     { id: 'form-section', title: 'Contact Form' },
     { id: 'gps-section', title: 'GPS Location' },
+    // submissions intentional last
+    { id: 'submissions', title: 'Submissions' },
 ];
 
 const PRIMARY_COLOR = '#ADD0B3';
@@ -66,6 +71,12 @@ const ContactUsContentEditor = () => {
         toast,
         closeToast
     } = form;
+    const { token } = useAuth();
+
+    // Submissions filter state (all | read | unread)
+    const [subFilter, setSubFilter] = React.useState('all');
+    const readFilterValue = subFilter === 'read' ? 'read' : subFilter === 'unread' ? 'unread' : undefined;
+    const { contacts, loading: contactsLoading, refetchContacts } = useContacts(token, 1, 20, readFilterValue);
 
     const scrollToSection = (id) => {
         const element = document.getElementById(id);
@@ -80,8 +91,7 @@ const ContactUsContentEditor = () => {
             return null; // Prevent rendering until pageData is available
         }
 
-        const sectionProps = { form, activeSection, PRIMARY_COLOR };
-        switch (activeSection) {
+    switch (activeSection) {
             case 'hero-section':
                 return (
                     <Card title="Hero Section" color={PRIMARY_COLOR} id="hero-section" className={activeSection === 'hero-section' ? `ring-4 ring-opacity-50 ring-[#ADD0B3]/50` : ''}>
@@ -125,6 +135,17 @@ const ContactUsContentEditor = () => {
                                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-[#ADD0B3] focus:border-[#ADD0B3] text-lg"
                             />
                         </div>
+                    </Card>
+                );
+            case 'submissions':
+                return (
+                    <Card title="Contact Submissions" color={PRIMARY_COLOR} id="submissions" className={activeSection === 'submissions' ? `ring-4 ring-opacity-50 ring-[#ADD0B3]/50` : ''}>
+                        <div className="mb-4 flex items-center gap-3">
+                            <button type="button" className={`px-4 py-2 rounded-full ${subFilter === 'all' ? 'bg-[#ADD0B3] text-white' : 'bg-gray-100 text-gray-700'}`} onClick={() => setSubFilter('all')}>All</button>
+                            <button type="button" className={`px-4 py-2 rounded-full ${subFilter === 'read' ? 'bg-[#ADD0B3] text-white' : 'bg-gray-100 text-gray-700'}`} onClick={() => setSubFilter('read')}>Read</button>
+                            <button type="button" className={`px-4 py-2 rounded-full ${subFilter === 'unread' ? 'bg-[#ADD0B3] text-white' : 'bg-gray-100 text-gray-700'}`} onClick={() => setSubFilter('unread')}>Unread</button>
+                        </div>
+                        <ContactTable contacts={contacts} loading={contactsLoading} refetchContacts={refetchContacts} />
                     </Card>
                 );
             case 'form-section':
@@ -233,7 +254,7 @@ const ContactUsContentEditor = () => {
             default:
                 return null;
         }
-    }, [activeSection, form, pageData, newFiles, imageUrls, handleInputChange, handleFileChange, handleArrayItemChange, handleAddItem, handleRemoveItem]);
+    }, [activeSection, pageData, newFiles, imageUrls, handleInputChange, handleFileChange, handleArrayItemChange, handleAddItem, handleRemoveItem, contacts, contactsLoading, refetchContacts, subFilter]);
 
     if (isLoading || !pageData) {
         return (
@@ -265,16 +286,18 @@ const ContactUsContentEditor = () => {
                     )}
                 </div>
                 <form onSubmit={handleSubmit} className="grid grid-cols-12 gap-8">
-                    <div className="col-span-12 md:col-span-3">
-                        <SidebarNavigation
-                            sections={SECTIONS}
-                            activeSection={activeSection}
-                            setActiveSection={scrollToSection}
-                            primaryColor={PRIMARY_COLOR}
-                        />
-                    </div>
-                    <div className="col-span-12 md:col-span-9 space-y-10">
+                        <div className="col-span-12">
+                            <SidebarNavigation
+                                sections={SECTIONS}
+                                activeSection={activeSection}
+                                setActiveSection={scrollToSection}
+                                primaryColor={PRIMARY_COLOR}
+                                variant="tabs"
+                            />
+                        </div>
+                        <div className="col-span-12 space-y-10">
                         {renderSection}
+                        {activeSection !== 'submissions' && (
                         <Button
                             type="submit"
                             disabled={isSubmitting}
@@ -289,6 +312,7 @@ const ContactUsContentEditor = () => {
                                 'Save Contact Us Content'
                             )}
                         </Button>
+                        )}
                     </div>
                 </form>
             </div>

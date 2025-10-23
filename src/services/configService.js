@@ -12,12 +12,12 @@ export const getConfiguration = async () => {
     });
 
     if (!response.ok) {
-      console.error("❌ Failed to fetch configuration:", response.statusText);
+        import('../utils/logger').then(({ default: logger }) => logger.error("❌ Failed to fetch configuration:", response.statusText));
       return null;
     }
 
     const data = await response.json();
-    console.log("✅ Configuration fetched:", data);
+      import('../utils/logger').then(({ default: logger }) => logger.log("✅ Configuration fetched:", data));
     return data;
   } catch (error) {
     console.error("❌ Error fetching configuration:", error);
@@ -37,15 +37,15 @@ export const updateConfigurationWithFiles = async (token, formData) => {
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error("❌ Failed to update configuration:", errText);
+        import('../utils/logger').then(({ default: logger }) => logger.error("❌ Failed to update configuration:", errText));
       return false;
     }
 
     const data = await response.json();
-    console.log("✅ Configuration updated successfully:", data);
+      import('../utils/logger').then(({ default: logger }) => logger.log("✅ Configuration updated successfully:", data));
     return true;
   } catch (error) {
-    console.error("❌ Error updating configuration:", error);
+      import('../utils/logger').then(({ default: logger }) => logger.error("❌ Error updating configuration:", error));
     return false;
   }
 };

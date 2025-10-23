@@ -1,13 +1,12 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { useResetPassword } from '../../hooks/useResetPassword';
 import AuthFormHeader from '../ui/AuthFormHeader';
 import AuthInputField from '../ui/AuthInputField';
 import AuthButton from '../ui/AuthButton';
-import Alert from '../../../components/ui/Alert'; // 🟢 Import Alert component
+import Alert from '../../../components/ui/Alert'; 
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-
+import { motion } from 'framer-motion';
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
@@ -88,6 +87,14 @@ const ResetPasswordForm = () => {
         title="Set New Password"
         description="Please enter and confirm your new password to regain access to your account."
       />
+
+      <Alert
+        show={!!apiError}
+        type="error"
+        message={apiError}
+        onClose={() => formik.setStatus(null)}
+      />
+
       <form onSubmit={handleSubmit} className="space-y-6 pt-2">
         <AuthInputField
           id="password"

@@ -76,6 +76,13 @@ const ForgotPasswordForm = () => {
         description="Enter the email associated with your account to receive a password reset link."
       />
 
+      <Alert
+        show={!!error}
+        type="error"
+        message={error}
+        onClose={() => formik.setStatus(null)}
+      />
+
       <form onSubmit={handleSubmit} className="space-y-6 pt-2">
         <AuthInputField
           id="email"
@@ -115,10 +122,6 @@ const ForgotPasswordForm = () => {
           </a>
         </motion.div>
       </form>
-
-      <motion.div variants={itemVariants} className="mt-6">
-        <Alert show={!!error} type="error" message={error} />
-      </motion.div>
     </motion.div>
   );
 };

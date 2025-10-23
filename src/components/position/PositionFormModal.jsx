@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import { Close as CloseIcon, Save as SaveIcon, AddCircle as AddCircleIcon } from '@mui/icons-material';
 import { createPosition, updatePosition } from '../../services/positionService';
+import { useToast } from '../../hooks/useToast';
 
 const PRIMARY_COLOR = "#ADD0B3";
 const HOVER_COLOR = "#8CB190";
@@ -22,6 +23,7 @@ export default function PositionFormModal({ open, onClose, position, token }) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { showToast } = useToast();
 
   // Effect to populate form when editing a position
   useEffect(() => {
@@ -65,10 +67,10 @@ export default function PositionFormModal({ open, onClose, position, token }) {
     try {
       if (isEdit) {
         await updatePosition(token, position._id, formData);
-        alert(`Position "${formData.name}" updated successfully!`);
+        showToast(`Position "${formData.name}" updated successfully!`, 'success');
       } else {
         await createPosition(token, formData);
-        alert(`Position "${formData.name}" created successfully!`);
+        showToast(`Position "${formData.name}" created successfully!`, 'success');
       }
       onClose(true); // Close and signal that a refresh is needed
     } catch (err) {

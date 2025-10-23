@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { forgotPassword } from '../services/userService';
 import { formatAuthError } from '../utils/authHelpers';
 
+
 export function useForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
@@ -38,6 +39,8 @@ export function useForgotPassword() {
     loading,
     message,
     error,
-    sent: !!message && !error,
+    // Add a state to know if the email has been successfully sent (to show a success screen/message)
+
+    sent: !!message, 
   };
 }

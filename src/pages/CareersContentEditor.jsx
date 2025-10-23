@@ -10,11 +10,21 @@ import usePageForm from '../hooks/usePageForm';
 import MediaUpload from '../components/ui/MediaUpload';
 import InputGroup from '../components/ui/InputGroup';
 import Card from '../components/ui/Card';
+// Position management inline imports
+import { useAuth } from '../contexts/AuthContext';
+import { usePositions } from '../hooks/usePositions';
+import PositionTable from '../components/position/PositionTable';
+import PositionFormModal from '../components/position/PositionFormModal';
+import PositionDetailsModal from '../components/position/PositionDetailsModal';
+import { ConfirmDialog } from '../components/Common/ConfirmDialog';
+import { deletePosition } from '../services/positionService';
+import { Pagination, Box } from '@mui/material';
 
 const SECTIONS = [
     { id: 'hero-section', title: 'Hero Banner' },
     { id: 'bubbles-section', title: 'Career Bubbles' },
     { id: 'application-section', title: 'Application Form' },
+    { id: 'positions', title: 'Positions' },
 ];
 
 const PRIMARY_COLOR = '#ADD0B3';
@@ -83,6 +93,18 @@ const CareersContentEditor = () => {
         closeToast
     } = form;
 
+    // Positions inline state/hooks (lifted to component root)
+    const { token } = useAuth();
+    const [posPage, setPosPage] = React.useState(1);
+    const [isFormModalOpen, setIsFormModalOpen] = React.useState(false);
+    const [editingPosition, setEditingPosition] = React.useState(null);
+    const [viewingPosition, setViewingPosition] = React.useState(null);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
+    const [positionToDelete, setPositionToDelete] = React.useState(null);
+    const [isDeleting, setIsDeleting] = React.useState(false);
+
+    const { positions, loading: positionsLoading, totalPages, refetchPositions } = usePositions(token, posPage, 10);
+
     const scrollToSection = (id) => {
         const element = document.getElementById(id);
         if (element) {
@@ -96,8 +118,7 @@ const CareersContentEditor = () => {
             return null; // Prevent rendering until pageData is available
         }
 
-        const sectionProps = { form, activeSection, PRIMARY_COLOR };
-        switch (activeSection) {
+    switch (activeSection) {
             case 'hero-section':
                 return (
                     <Card title="Hero Section" color={PRIMARY_COLOR} id="hero-section" className={activeSection === 'hero-section' ? `ring-4 ring-opacity-50 ring-[#ADD0B3]/50` : ''}>
@@ -233,10 +254,105 @@ const CareersContentEditor = () => {
                         />
                     </Card>
                 );
+                case 'positions': {
+                    const handleDeleteClick = (position) => {
+                        setPositionToDelete(position);
+                        setDeleteConfirmOpen(true);
+                    };
+
+                    const handleConfirmDelete = async () => {
+                        if (!positionToDelete) return;
+                        setIsDeleting(true);
+                        try {
+                            await deletePosition(token, positionToDelete._id);
+                            refetchPositions();
+                        } catch (error) {
+                            console.error('Failed to delete position', error);
+                        } finally {
+                            setIsDeleting(false);
+                            setDeleteConfirmOpen(false);
+                            setPositionToDelete(null);
+                        }
+                    };
+
+                    const handleEdit = (position) => {
+                        setEditingPosition(position);
+                        setIsFormModalOpen(true);
+                    };
+
+                    const handleView = (position) => setViewingPosition(position);
+
+                    const handleCloseFormModal = (needsRefresh = false) => {
+                        setIsFormModalOpen(false);
+                        setEditingPosition(null);
+                        if (needsRefresh) refetchPositions();
+                    };
+
+                    return (
+                        <div>
+                            <div className="mb-6">
+                                <h2 className="text-2xl font-semibold">Job Positions</h2>
+                                <p className="text-sm text-gray-600">Manage the positions used across the Careers flow.</p>
+                            </div>
+
+                            <PositionTable
+                                positions={positions}
+                                loading={positionsLoading}
+                                onView={handleView}
+                                onEdit={handleEdit}
+                                onDelete={handleDeleteClick}
+                                onRefresh={refetchPositions}
+                            />
+
+                            {!positionsLoading && totalPages > 0 && (
+                                <Box display="flex" justifyContent="center" mt={4}>
+                                    <Pagination count={totalPages} page={posPage} onChange={(e, value) => setPosPage(value)} color="primary" disabled={positionsLoading} />
+                                </Box>
+                            )}
+
+                            <PositionFormModal open={isFormModalOpen} onClose={handleCloseFormModal} position={editingPosition} token={token} />
+                            <PositionDetailsModal open={!!viewingPosition} onClose={() => setViewingPosition(null)} position={viewingPosition} />
+
+                            <ConfirmDialog
+                                open={deleteConfirmOpen}
+                                onClose={(v) => setDeleteConfirmOpen(!!v)}
+                                onConfirm={handleConfirmDelete}
+                                title={`Confirm Deletion`}
+                                message={`Are you sure you want to delete the Position: ${positionToDelete?.name || ''}?`}
+                                confirmLabel={`Delete Position`}
+                                cancelLabel={`Cancel`}
+                                loading={isDeleting}
+                            />
+                        </div>
+                    );
+                }
             default:
                 return null;
         }
-    }, [activeSection, form, pageData, newFiles, imageUrls, handleInputChange, handleFileChange, handleArrayItemChange, handleAddItem, handleRemoveItem]);
+    }, [
+        activeSection,
+        pageData,
+        newFiles,
+        imageUrls,
+        handleInputChange,
+        handleFileChange,
+        handleArrayItemChange,
+        handleAddItem,
+        handleRemoveItem,
+        // positions-related deps
+        positions,
+        positionsLoading,
+        totalPages,
+        posPage,
+        isFormModalOpen,
+        editingPosition,
+        viewingPosition,
+        deleteConfirmOpen,
+        positionToDelete,
+        isDeleting,
+        token,
+        refetchPositions,
+    ]);
 
     if (isLoading || !pageData) {
         return (
@@ -268,30 +384,33 @@ const CareersContentEditor = () => {
                     )}
                 </div>
                 <form onSubmit={handleSubmit} className="grid grid-cols-12 gap-8">
-                    <div className="col-span-12 md:col-span-3">
+                    <div className="col-span-12">
                         <SidebarNavigation
                             sections={SECTIONS}
                             activeSection={activeSection}
                             setActiveSection={scrollToSection}
                             primaryColor={PRIMARY_COLOR}
+                            variant="tabs"
                         />
                     </div>
-                    <div className="col-span-12 md:col-span-9 space-y-10">
+                    <div className="col-span-12 space-y-10">
                         {renderSection}
-                        <Button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className={`w-full flex justify-center items-center gap-3 text-white py-4 rounded-2xl font-bold text-xl hover:opacity-90 transition-all duration-300 shadow-xl`}
-                            style={{ backgroundColor: PRIMARY_COLOR }}
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <LoadingSpinner color="white" /> Saving Changes...
-                                </>
-                            ) : (
-                                'Save Careers Content'
-                            )}
-                        </Button>
+                        {activeSection !== 'positions' && (
+                            <Button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className={`w-full flex justify-center items-center gap-3 text-white py-4 rounded-2xl font-bold text-xl hover:opacity-90 transition-all duration-300 shadow-xl`}
+                                style={{ backgroundColor: PRIMARY_COLOR }}
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <LoadingSpinner color="white" /> Saving Changes...
+                                    </>
+                                ) : (
+                                    'Save Careers Content'
+                                )}
+                            </Button>
+                        )}
                     </div>
                 </form>
             </div>

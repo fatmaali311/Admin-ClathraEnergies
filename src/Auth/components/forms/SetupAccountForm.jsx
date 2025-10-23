@@ -96,6 +96,14 @@ const SetupAccountForm = () => {
         title="Set Up Your Account"
         description="Please provide your required details to complete your Admin Dashboard account setup."
       />
+
+      <Alert
+        show={!!apiError}
+        type="error"
+        message={apiError}
+        onClose={() => formik.setStatus(null)}
+      />
+
       <form onSubmit={handleSubmit} className="space-y-6 pt-2">
         <AuthInputField
           id="userName"
@@ -184,16 +192,6 @@ const SetupAccountForm = () => {
           </a>
         </motion.div>
       </form>
-
-      {/* 🟢 Replaced inline error div with Alert component */}
-      <motion.div variants={itemVariants} className="mt-6">
-        <Alert
-          show={!!apiError}
-          type="error"
-          message={apiError}
-          onClose={() => formik.setStatus({})}
-        />
-      </motion.div>
     </motion.div>
   );
 };

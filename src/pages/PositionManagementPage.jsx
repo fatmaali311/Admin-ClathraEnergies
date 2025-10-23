@@ -7,7 +7,7 @@ import { useToast } from "../hooks/useToast"; // NEW
 import PositionTable from "../components/position/PositionTable";
 import PositionFormModal from "../components/position/PositionFormModal";
 import PositionDetailsModal from "../components/position/PositionDetailsModal";
-import ConfirmDeleteModal from "../components/ui/ConfirmDeleteModal"; // NEW
+import { ConfirmDialog } from "../components/Common/ConfirmDialog";
 import { deletePosition } from "../services/positionService";
 import { Pagination, Box, Typography } from "@mui/material";
 
@@ -146,13 +146,15 @@ export default function PositionManagementPage() {
         position={viewingPosition}
       /> 
 
-      <ConfirmDeleteModal
+      <ConfirmDialog
         open={deleteConfirmOpen}
-        onClose={setDeleteConfirmOpen}
+        onClose={(v) => setDeleteConfirmOpen(!!v)}
         onConfirm={handleConfirmDelete}
-        itemType="Position"
-        itemName={positionToDelete?.name || ''}
-        isDeleting={isDeleting}
+        title={`Confirm Deletion`}
+        message={`Are you sure you want to delete the Position: ${positionToDelete?.name || ''}?`}
+        confirmLabel={`Delete Position`}
+        cancelLabel={`Cancel`}
+        loading={isDeleting}
       />
       
       {/* Your custom Toast component */}

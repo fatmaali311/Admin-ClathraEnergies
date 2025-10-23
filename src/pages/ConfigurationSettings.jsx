@@ -94,7 +94,7 @@ const ConfigurationSettings = () => {
     if (fileState.secondaryLogo) formData.append('secondary_logo', fileState.secondaryLogo);
     if (fileState.mainVideo) formData.append('main_video', fileState.mainVideo);
 
-    console.log('🚀 Sending Cleaned Configuration:', configToSend);
+  import('../utils/logger').then(({ default: logger }) => logger.log('🚀 Sending Cleaned Configuration:', configToSend));
 
     const success = await updateConfigurationWithFiles(token, formData);
 
@@ -117,7 +117,7 @@ const ConfigurationSettings = () => {
       type: 'error',
       message: `Unexpected error: ${err.message}`,
     });
-    console.error(err);
+  import('../utils/logger').then(({ default: logger }) => logger.error(err));
   } finally {
     setIsSubmitting(false);
   }
@@ -154,18 +154,19 @@ const ConfigurationSettings = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-12 gap-8">
-          {/* Sidebar */}
-          <div className="col-span-12 md:col-span-3">
+          {/* Tabs (inline) */}
+          <div className="col-span-12">
             <SidebarNavigation
               sections={SECTIONS}
               activeSection={activeSection}
               setActiveSection={setActiveSection}
               primaryColor={PRIMARY_COLOR}
+              variant="tabs"
             />
           </div>
 
           {/* Main Content */}
-          <div className="col-span-12 md:col-span-9 space-y-10">
+          <div className="col-span-12 space-y-10">
             {activeSection === 'general' && (
               <GeneralSettingsSection
                 config={config}

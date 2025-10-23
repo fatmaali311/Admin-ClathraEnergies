@@ -13,14 +13,14 @@ export const getAllPageTitles = async () => {
     });
 
     if (!response.ok) {
-      console.error("❌ Failed to fetch all page titles:", response.statusText);
+      import('../utils/logger').then(({ default: logger }) => logger.error("❌ Failed to fetch all page titles:", response.statusText));
       return [];
     }
 
     const data = await response.json();
     return data; // e.g., [{ _id: "...", title: "home" }, ...]
   } catch (error) {
-    console.error("❌ Error fetching all page titles:", error);
+    import('../utils/logger').then(({ default: logger }) => logger.error("❌ Error fetching all page titles:", error));
     return [];
   }
 };
@@ -40,15 +40,15 @@ export const getPageContentByTitle = async (title) => {
     });
 
     if (!response.ok) {
-      console.error(`❌ Failed to fetch page '${title}':`, response.statusText);
+      import('../utils/logger').then(({ default: logger }) => logger.error(`❌ Failed to fetch page '${title}':`, response.statusText));
       return null;
     }
 
     const data = await response.json();
-    console.log(`✅ Page content for '${title}' fetched:`, data);
+    import('../utils/logger').then(({ default: logger }) => logger.log(`✅ Page content for '${title}' fetched:`, data));
     return data; // Contains { pageObj, images }
   } catch (error) {
-    console.error(`❌ Error fetching page '${title}':`, error);
+    import('../utils/logger').then(({ default: logger }) => logger.error(`❌ Error fetching page '${title}':`, error));
     return null;
   }
 };
@@ -71,22 +71,22 @@ export const updatePageContentWithFiles = async (token, formData) => {
       body: formData,
     });
 
-    if (response.status === 401) {
-        console.error("❌ Unauthorized: Token wrong or you are not an admin.");
-        return false;
-    }
+  if (response.status === 401) {
+    import('../utils/logger').then(({ default: logger }) => logger.error("❌ Unauthorized: Token wrong or you are not an admin."));
+    return false;
+  }
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error("❌ Failed to update page content:", errText);
+      import('../utils/logger').then(({ default: logger }) => logger.error("❌ Failed to update page content:", errText));
       return false;
     }
 
     const data = await response.json();
-    console.log("✅ Page content updated successfully:", data);
+    import('../utils/logger').then(({ default: logger }) => logger.log("✅ Page content updated successfully:", data));
     return true;
   } catch (error) {
-    console.error("❌ Error updating page content:", error);
+    import('../utils/logger').then(({ default: logger }) => logger.error("❌ Error updating page content:", error));
     return false;
   }
 };

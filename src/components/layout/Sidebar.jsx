@@ -14,12 +14,12 @@ import {
   MdSettings
 } from 'react-icons/md';
 import Logo from '../Common/Logo';
+import { PRIMARY_COLOR, HOVER_COLOR } from '../Common/styles';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const { user } = useAuth();
 
   // Colors
-  const sidebarBgColor = 'bg-[#ADD0B3]';
   const textColor = 'text-[#388E3C]';
   const activeBgColor = 'bg-white';
 
@@ -51,7 +51,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     <>
       <aside
         className={`
-          ${sidebarBgColor} w-64 h-[calc(100vh-4rem)] fixed top-16 left-0 
+          bg-[#ADD0B3] w-64 h-[calc(100vh-4rem)] fixed top-16 left-0 
           p-4 z-40 transition-transform duration-300 flex flex-col
           ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'} 
           md:translate-x-0
@@ -103,7 +103,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           {/* User Management - superadmin only */}
           {hasPermission(user?.role, 'superadmin') && (
             <div className="mt-8 pt-4 border-t border-white border-opacity-30">
-              <h2 className={`text-xs font-semibold uppercase opacity-90 tracking-wider mb-3 ${textColor}`}>
+              <h2 className={`text-xs font-semibold uppercase opacity-90 tracking-wider mb-3 `}>
                 Administration
               </h2>
               <ul className="space-y-1">

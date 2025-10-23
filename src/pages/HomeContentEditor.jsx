@@ -92,15 +92,16 @@ const HomeContentEditor = () => {
                     )}
                 </div>
                 <form onSubmit={handleSubmit} className="grid grid-cols-12 gap-8">
-                    <div className="col-span-12 md:col-span-3">
+                    <div className="col-span-12">
                         <SidebarNavigation
                             sections={SECTIONS}
                             activeSection={activeSection}
                             setActiveSection={scrollToSection}
                             primaryColor={PRIMARY_COLOR}
+                            variant="tabs"
                         />
                     </div>
-                    <div className="col-span-12 md:col-span-9 space-y-10">
+                    <div className="col-span-12 space-y-10">
                         {renderSection}
                         <Button
                             type="submit"

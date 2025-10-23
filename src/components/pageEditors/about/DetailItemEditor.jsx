@@ -14,10 +14,7 @@ const DetailItemEditor = ({
     onFileChange,
     onRemove
 }) => {
-    const itemPath = basePath;
-
-
-    const handleInput = (e) => {
+        const handleInput = (e) => {
   onChange(basePath, index, e.target.name.split('.').pop(), e.target.value);
 };
 
@@ -26,15 +23,17 @@ const DetailItemEditor = ({
         <div className="border border-gray-200 p-4 rounded-xl space-y-4 bg-gray-50">
             <h4 className="text-lg font-bold text-gray-800 border-b pb-2">Detail Item #{index + 1}</h4>
 
-            {/* Image Upload */}
-            <MediaUpload
-                title="Icon Image"
-                name={imageName}
-                fileState={newFiles[imageName]}
-                url={imageUrls[imageName]}
-                handleFileChange={onFileChange}
-                accept="image/*"
-            />
+            {/* Image Upload: skip for objectives (no icons needed) */}
+            {!(basePath === 'our_strategic_objectives' || (imageName && imageName.startsWith('objective_icon_'))) && (
+                <MediaUpload
+                    title="Icon Image"
+                    name={imageName}
+                    fileState={newFiles[imageName]}
+                    url={imageUrls[imageName]}
+                    handleFileChange={onFileChange}
+                    accept="image/*"
+                />
+            )}
 
             {/* Title */}
             <InputGroup

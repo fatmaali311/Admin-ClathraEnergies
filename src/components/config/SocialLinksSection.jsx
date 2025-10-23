@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useToast } from '../../hooks/useToast';
 import Card from '../ui/Card';
 
 const IconLookup = ({ value, onChange }) => (
@@ -9,18 +10,30 @@ const IconLookup = ({ value, onChange }) => (
     className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500 text-base"
   >
     <option value="">-- Select Icon --</option>
-    <option value="fa-facebook">Facebook</option>
-    <option value="fa-twitter">Twitter / X</option>
-    <option value="fa-instagram">Instagram</option>
-    <option value="fa-linkedin">LinkedIn</option>
-    <option value="fa-youtube">YouTube</option>
-    <option value="fa-whatsapp">WhatsApp</option>
+    <option value="FaFacebookF">Facebook</option>
+    <option value="FaSquareXTwitter">Twitter / X</option>
+    <option value="FaInstagram">Instagram</option>
+    <option value="FaLinkedin">LinkedIn</option>
+    <option value="FaYoutube">YouTube</option>
+    <option value="FaWhatsapp">WhatsApp</option>
   </select>
 );
 
 const SocialLinksSection = ({ config, handleArrayAction, PRIMARY_COLOR }) => {
+  const { showToast } = useToast();
+
   const handleUpdate = (index, field, value) => {
     handleArrayAction('socialLinks', 'UPDATE', index, field, value);
+  };
+
+  const handleAdd = () => {
+    handleArrayAction('socialLinks', 'ADD');
+    showToast('Social link added', 'success');
+  };
+
+  const handleRemove = (index) => {
+    handleArrayAction('socialLinks', 'REMOVE', index);
+    showToast('Social link removed', 'success');
   };
 
   return (
@@ -49,18 +62,19 @@ const SocialLinksSection = ({ config, handleArrayAction, PRIMARY_COLOR }) => {
               className="w-full md:w-2/5 px-3 py-2 border border-gray-300 rounded-lg text-left text-lg"
             />
 
-            {/* Icon */}
-            <div className="w-full md:w-1/5">
+            {/* Icon (select + preview) */}
+            <div className="w-full md:w-1/5 flex items-center gap-3">
               <IconLookup
                 value={link.iconClass || ''}
                 onChange={(e) => handleUpdate(index, 'iconClass', e.target.value)}
               />
+          
             </div>
 
             {/* Remove Button */}
             <button
               type="button"
-              onClick={() => handleArrayAction('socialLinks', 'REMOVE', index)}
+              onClick={() => handleRemove(index)}
               className="text-red-600 hover:text-red-800 transition duration-150 p-2 md:w-auto w-full border border-red-200 rounded-lg"
             >
               Remove
@@ -71,7 +85,7 @@ const SocialLinksSection = ({ config, handleArrayAction, PRIMARY_COLOR }) => {
         {/* Add New Link */}
         <button
           type="button"
-          onClick={() => handleArrayAction('socialLinks', 'ADD')}
+          onClick={handleAdd}
           className="mt-4 bg-[#ADD0B3] text-white px-6 py-3 rounded-xl hover:bg-[#388E3C] transition font-semibold shadow-md"
         >
           + Add Social Link
