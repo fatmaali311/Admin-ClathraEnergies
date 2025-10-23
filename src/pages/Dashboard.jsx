@@ -32,7 +32,13 @@ const StatCard = ({ title, value, sub, color = '#ADD0B3', link, icon: Icon }) =>
 );
 
 const Dashboard = () => {
-  const { user, token } = useAuth();
+  const { user, token, loading: authLoading } = useAuth();
+  // Helper to get a friendly display name from the user object
+  const getDisplayName = (u) => {
+    if (!u) return null;
+    return u.full_name || u.fullName || u.name || u.username || u.userName || u.email || 'Admin';
+  };
+  const displayName = getDisplayName(user);
   const [contactsStats, setContactsStats] = useState(null);
   const [appsStats, setAppsStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -64,7 +70,7 @@ const Dashboard = () => {
       {/* Header */}
       <div className="mb-10">
         <h1 className="text-4xl font-bold text-black mb-2">
-          Welcome back, {user?.full_name || 'Admin'} 👋
+          Welcome back, {authLoading ? 'Loading...' : displayName || 'Admin'} 👋
         </h1>
         <p className="text-gray-600 text-lg leading-relaxed">
           Manage your <span className="font-semibold text-[#0F5132]">ClarthraEnergies</span> website content, track
@@ -80,8 +86,8 @@ const Dashboard = () => {
           sub={
             loading
               ? ''
-              : `Unread: ${contactsStats?.summary?.unreadCount || 0} • Read: ${
-                  contactsStats?.summary?.readCount || 0
+              : `Unread: ${contactsStats?.summary?.unreadCount || 0} • Read: ${contactsStats?.summary?.readCount || 0}${
+                  displayName ? ` • Managed by ${displayName}` : ''
                 }`
           }
           color="#ADD0B3"
@@ -95,7 +101,7 @@ const Dashboard = () => {
           sub={
             loading
               ? ''
-              : `This month: ${appsStats?.summary?.thisMonthCount || 0}`
+              : `This month: ${appsStats?.summary?.thisMonthCount || 0}${displayName ? ` • Managed by ${displayName}` : ''}`
           }
           color="#ADD0B3"
           link="/dashboard/content/applications"
@@ -107,11 +113,9 @@ const Dashboard = () => {
           value={
             loading
               ? 'Loading...'
-              : appsStats?.filteredMonth?.count ??
-                appsStats?.summary?.thisMonthCount ??
-                '—'
+              : appsStats?.filteredMonth?.count ?? appsStats?.summary?.thisMonthCount ?? '—'
           }
-          sub="Recent submissions overview"
+          sub={`Recent submissions overview${displayName ? ` • Managed by ${displayName}` : ''}`}
           color="#ADD0B3"
           icon={Calendar}
         />
