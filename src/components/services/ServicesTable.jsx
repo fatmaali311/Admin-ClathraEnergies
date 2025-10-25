@@ -37,10 +37,72 @@ export default function ServicesTable({
   };
 
   const columns = [
+    { 
+      key: 'image', 
+      label: 'Image',
+      render: (r) => {
+        const imageUrl = getServiceField(r, 'data.images.service-image', '');
+        return imageUrl ? (
+          <div style={{ width: '60px', height: '60px', position: 'relative' }}>
+            <img 
+              src={imageUrl}
+              alt={`${r.title} service`}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                borderRadius: '8px',
+                border: '1px solid #e0e0e0'
+              }}
+            />
+          </div>
+        ) : (
+          <div 
+            style={{
+              width: '60px',
+              height: '60px',
+              borderRadius: '8px',
+              backgroundColor: '#f5f5f5',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '1px solid #e0e0e0'
+            }}
+          >
+            <Typography variant="caption" color="textSecondary">
+              No Image
+            </Typography>
+          </div>
+        );
+      }
+    },
     { key: 'title', label: 'Title' },
-    { key: 'sub', label: 'Sub Title', render: (r) => getServiceField(r, 'data.serviceObj.sub_title', 'N/A') },
-    { key: 'slug', label: 'Slug', className: 'hide-xs-sm' },
-    { key: 'updatedAt', label: 'Updated At', className: 'hide-xs-lg', render: (r) => new Date(r.updatedAt).toLocaleDateString() },
+    { 
+      key: 'subtitle', 
+      label: 'Sub Title', 
+      render: (r) => getServiceField(r, 'data.serviceObj.sub_title', 'N/A'),
+      className: 'hide-xs-sm'
+    },
+    { 
+      key: 'color', 
+      label: 'Theme Color',
+      className: 'hide-xs-lg',
+      render: (r) => {
+        const color = getServiceField(r, 'data.serviceObj.main_color', '#ADD0B3');
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ 
+              width: '20px', 
+              height: '20px', 
+              borderRadius: '4px', 
+              backgroundColor: color,
+              border: '1px solid #e0e0e0'
+            }} />
+            <span>{color}</span>
+          </div>
+        );
+      }
+    },
   ];
 
   return (
