@@ -1,5 +1,6 @@
 import React from 'react';
 import MediaUpload from '../ui/MediaUpload';
+import { getAdminImageUrl } from '../../lib/mediaUtils';
 
 const MediaUploadSection = ({ config, fileState, handleFileChange, PRIMARY_COLOR }) => {
   return (
@@ -16,7 +17,7 @@ const MediaUploadSection = ({ config, fileState, handleFileChange, PRIMARY_COLOR
         title="Main Logo"
         name="mainLogo"
         fileState={fileState.mainLogo}
-        url={config.mediaUrls.mainLogoUrl}
+        url={getAdminImageUrl(config.mediaUrls.mainLogoUrl)}
         handleFileChange={handleFileChange}
       />
 
@@ -25,7 +26,7 @@ const MediaUploadSection = ({ config, fileState, handleFileChange, PRIMARY_COLOR
         title="Secondary Logo"
         name="secondaryLogo"
         fileState={fileState.secondaryLogo}
-        url={config.mediaUrls.secondaryLogoUrl}
+        url={getAdminImageUrl(config.mediaUrls.secondaryLogoUrl)}
         handleFileChange={handleFileChange}
       />
 
@@ -34,7 +35,7 @@ const MediaUploadSection = ({ config, fileState, handleFileChange, PRIMARY_COLOR
         title="Main Video"
         name="mainVideo"
         fileState={fileState.mainVideo}
-        url={config.mediaUrls.mainVideoUrl}
+        url={getAdminImageUrl(config.mediaUrls.mainVideoUrl)}
         handleFileChange={handleFileChange}
         accept="video/*"
         isVideo
