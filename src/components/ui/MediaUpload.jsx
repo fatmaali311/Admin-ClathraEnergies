@@ -55,11 +55,16 @@ const MediaUpload = ({
                 {(displayUrl) ? (
                     isVideo ? (
                         <video 
+                            key={displayUrl}
                             src={displayUrl} 
                             controls 
+                            preload="metadata"
                             className="max-h-full w-auto object-contain"
                             title={`Video Preview for ${title}`}
-                        />
+                        >
+                            <source src={displayUrl} type="video/mp4" />
+                            Your browser does not support the video tag.
+                        </video>
                     ) : (
                         <img 
                             src={displayUrl} 
@@ -90,6 +95,11 @@ const MediaUpload = ({
                 }}
                 className="w-full text-base text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-base file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer"
             />
+            {isVideo && (
+                <div className="mt-2 text-sm text-gray-500">
+                    Supported formats: MP4, MOV (max size: 50MB)
+                </div>
+            )}
             
             {/* Display status of new file selection */}
             {fileState && (
