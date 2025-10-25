@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import DashboardLayout from '../layout/DashboardLayout';
-import Alert from '../components/ui/Alert';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import Toast from '../components/ui/Toast';
 
 // Reusable Components
 import SidebarNavigation from '../components/layout/SidebarNavigation';
@@ -29,7 +29,9 @@ const ConfigurationSettings = () => {
   const token = localStorage.getItem('token');
   const [activeSection, setActiveSection] = useState(SECTIONS[0].id);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [alert, setAlert] = useState({ show: false, type: 'info', message: '' });
+  const [toast, setToast] = useState({ message: '', type: '' });
+
+  const closeToast = () => setToast({ message: '', type: '' });
 
   // Custom Hook
   const {
@@ -41,88 +43,100 @@ const ConfigurationSettings = () => {
     handleArrayAction,
   } = useConfigForm(token);
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsSubmitting(true);
-  setAlert({ show: false, message: '', type: 'info' });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
 
-  try {
-    const formData = new FormData();
+    try {
+      const formData = new FormData();
 
-    // ✅ Deep clone config
-    const configToSend = JSON.parse(JSON.stringify(config));
+      // ✅ Deep clone config
+      const configToSend = JSON.parse(JSON.stringify(config));
 
-    // ✅ 1. Clean up social links
-    configToSend.socialLinks = (configToSend.socialLinks || []).filter(
-      (link) => link.name && link.link && link.iconClass
-    );
-
-    // ✅ 2. Clean up working hours
-    configToSend.workingHours = (configToSend.workingHours || []).filter((item) => {
-      // if marked as closed, only send { dayFrom, dayTo, isClosed }
-      if (item.isClosed) {
-        return item.dayFrom || item.dayTo; // only if it has days defined
-      }
-      // if open, ensure all fields have values
-      return (
-        item.dayFrom &&
-        item.dayTo &&
-        item.hoursFrom &&
-        item.hoursTo &&
-        item.isClosed !== undefined
+      // ✅ 1. Clean up social links
+      configToSend.socialLinks = (configToSend.socialLinks || []).filter(
+        (link) => link.name && link.link && link.iconClass
       );
-    }).map((item) => {
-      // if closed, remove unnecessary fields
-      if (item.isClosed) {
-        return {
-          dayFrom: item.dayFrom,
-          dayTo: item.dayTo,
-          isClosed: true,
-        };
+
+      // ✅ 2. Clean up working hours
+      configToSend.workingHours = (configToSend.workingHours || [])
+        .filter((item) => {
+          if (item.isClosed) {
+            return item.dayFrom || item.dayTo;
+          }
+          return item.dayFrom && item.hoursFrom && item.hoursTo;
+        })
+        .map((item) => {
+          if (item.isClosed) {
+            return {
+              dayFrom: item.dayFrom || "",
+              dayTo: item.dayTo || "",
+              isClosed: true,
+            };
+          }
+          return {
+            dayFrom: item.dayFrom || "",
+            dayTo: item.dayTo || "",
+            hoursFrom: item.hoursFrom || "",
+            hoursTo: item.hoursTo || "",
+            isClosed: false,
+          };
+        });
+
+      // ✅ 3. Remove media URLs (not needed)
+      delete configToSend.mediaUrls;
+
+      // ✅ 4. Append cleaned data to FormData
+      formData.append("data", JSON.stringify(configToSend));
+
+      // ✅ 5. Append files if exist
+      if (fileState.mainLogo) formData.append("main_logo", fileState.mainLogo);
+      if (fileState.secondaryLogo)
+        formData.append("secondary_logo", fileState.secondaryLogo);
+      if (fileState.mainVideo) formData.append("main_video", fileState.mainVideo);
+
+      // Replaced logger call with console.log
+      console.log("🚀 Sending Cleaned Configuration:", configToSend);
+
+      // ✅ Send to backend
+      const result = await updateConfigurationWithFiles(token, formData);
+
+      if (result.success) {
+        setToast({
+          message: result.message || "✅ Configuration saved successfully!",
+          type: "success",
+        });
+      } else {
+        // ✅ LOGIC ADDED/IMPROVED: Display detailed errors from the backend
+        let errorMsg = result.message || "❌ Failed to save configuration.";
+
+        // Check for validation errors object
+        if (result.errors && typeof result.errors === "object") {
+          const fieldErrors = Object.entries(result.errors)
+            .map(
+              ([key, val]) =>
+                `**${key}**: ${Array.isArray(val) ? val.join(", ") : val}`
+            )
+            .join(". "); // Changed separator for better readability in Toast
+
+          errorMsg = `Validation failed: ${fieldErrors}`;
+        }
+
+        setToast({ message: errorMsg, type: "error" });
       }
-      return item;
-    });
+    } catch (err) {
+      // ✅ Catch unexpected client-side errors
+      // Replaced logger call with console.error
+      console.error("❌ Unexpected error:", err);
 
-    // ✅ 3. Remove media URLs (not needed)
-    delete configToSend.mediaUrls;
-
-    // ✅ 4. Append cleaned data to FormData
-    formData.append('data', JSON.stringify(configToSend));
-
-    // ✅ 5. Append files if exist
-    if (fileState.mainLogo) formData.append('main_logo', fileState.mainLogo);
-    if (fileState.secondaryLogo) formData.append('secondary_logo', fileState.secondaryLogo);
-    if (fileState.mainVideo) formData.append('main_video', fileState.mainVideo);
-
-  import('../utils/logger').then(({ default: logger }) => logger.log('🚀 Sending Cleaned Configuration:', configToSend));
-
-    const success = await updateConfigurationWithFiles(token, formData);
-
-    if (success) {
-      setAlert({
-        show: true,
-        type: 'success',
-        message: 'Configuration settings saved successfully!',
+      setToast({
+        message: `Unexpected client error: ${err.message}`,
+        type: "error",
       });
-    } else {
-      setAlert({
-        show: true,
-        type: 'error',
-        message: 'Failed to save configuration. Please try again.',
-      });
+    } finally {
+      setIsSubmitting(false);
     }
-  } catch (err) {
-    setAlert({
-      show: true,
-      type: 'error',
-      message: `Unexpected error: ${err.message}`,
-    });
-  import('../utils/logger').then(({ default: logger }) => logger.error(err));
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
+  };
 
   if (isLoading) {
     return (
@@ -144,17 +158,9 @@ const ConfigurationSettings = () => {
           System Configuration
         </h1>
 
-        <div className="mb-6 max-w-4xl mx-auto">
-          <Alert
-            show={alert.show}
-            type={alert.type}
-            message={alert.message}
-            onClose={() => setAlert({ show: false, type: 'info', message: '' })}
-          />
-        </div>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-12 gap-8">
-          {/* Tabs (inline) */}
+          {/* Tabs Navigation */}
           <div className="col-span-12">
             <SidebarNavigation
               sections={SECTIONS}
@@ -208,7 +214,8 @@ const ConfigurationSettings = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full flex justify-center items-center gap-3 text-white py-4 rounded-2xl font-bold text-xl hover:opacity-90 transition-all duration-300 shadow-xl ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`w-full flex justify-center items-center gap-3 text-white py-4 rounded-2xl font-bold text-xl hover:opacity-90 transition-all duration-300 shadow-xl ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+                }`}
               style={{ backgroundColor: PRIMARY_COLOR }}
             >
               {isSubmitting ? (
@@ -222,6 +229,9 @@ const ConfigurationSettings = () => {
           </div>
         </form>
       </div>
+
+      {/* ✅ Global Toast Notification */}
+      <Toast message={toast.message} type={toast.type} onClose={closeToast} />
     </DashboardLayout>
   );
 };

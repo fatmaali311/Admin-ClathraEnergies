@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import DashboardLayout from '../layout/DashboardLayout';
-import Alert from '../components/ui/Alert';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import Toast from '../components/ui/Toast';
 import SidebarNavigation from '../components/layout/SidebarNavigation';
@@ -91,7 +90,7 @@ const ContactUsContentEditor = () => {
             return null; // Prevent rendering until pageData is available
         }
 
-    switch (activeSection) {
+        switch (activeSection) {
             case 'hero-section':
                 return (
                     <Card title="Hero Section" color={PRIMARY_COLOR} id="hero-section" className={activeSection === 'hero-section' ? `ring-4 ring-opacity-50 ring-[#ADD0B3]/50` : ''}>
@@ -275,43 +274,34 @@ const ContactUsContentEditor = () => {
                 >
                     Contact Us Page Content Editor
                 </h1>
-                <div className="mb-6 max-w-4xl mx-auto">
-                    {toast.message && (
-                        <Alert
-                            show={true}
-                            type={toast.type}
-                            message={toast.message}
-                            onClose={closeToast}
-                        />
-                    )}
-                </div>
+             
                 <form onSubmit={handleSubmit} className="grid grid-cols-12 gap-8">
-                        <div className="col-span-12">
-                            <SidebarNavigation
-                                sections={SECTIONS}
-                                activeSection={activeSection}
-                                setActiveSection={scrollToSection}
-                                primaryColor={PRIMARY_COLOR}
-                                variant="tabs"
-                            />
-                        </div>
-                        <div className="col-span-12 space-y-10">
+                    <div className="col-span-12">
+                        <SidebarNavigation
+                            sections={SECTIONS}
+                            activeSection={activeSection}
+                            setActiveSection={scrollToSection}
+                            primaryColor={PRIMARY_COLOR}
+                            variant="tabs"
+                        />
+                    </div>
+                    <div className="col-span-12 space-y-10">
                         {renderSection}
                         {activeSection !== 'submissions' && (
-                        <Button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className={`w-full flex justify-center items-center gap-3 text-white py-4 rounded-2xl font-bold text-xl hover:opacity-90 transition-all duration-300 shadow-xl`}
-                            style={{ backgroundColor: PRIMARY_COLOR }}
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <LoadingSpinner color="white" /> Saving Changes...
-                                </>
-                            ) : (
-                                'Save Contact Us Content'
-                            )}
-                        </Button>
+                            <Button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className={`w-full flex justify-center items-center gap-3 text-white py-4 rounded-2xl font-bold text-xl hover:opacity-90 transition-all duration-300 shadow-xl`}
+                                style={{ backgroundColor: PRIMARY_COLOR }}
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <LoadingSpinner color="white" /> Saving Changes...
+                                    </>
+                                ) : (
+                                    'Save Contact Us Content'
+                                )}
+                            </Button>
                         )}
                     </div>
                 </form>

@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import DashboardLayout from '../layout/DashboardLayout';
-import Alert from '../components/ui/Alert';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import Toast from '../components/ui/Toast';
 import SidebarNavigation from '../components/layout/SidebarNavigation';
@@ -30,9 +29,11 @@ const SECTIONS = [
 const PRIMARY_COLOR = '#ADD0B3';
 
 const BubbleItemEditor = ({ index, bubble, basePath, imageUrls, newFiles, onChange, onFileChange, onRemove }) => {
-    const itemPath = `${basePath}.${index}`;
     const handleInput = (e) => {
-        onChange(itemPath, index, e.target.name.split('.').pop(), e.target.value);
+        const fieldName = e.target.name;
+        // pass the array base path (e.g., 'bubbles') and the index so the handler
+        // can correctly update the item inside the array stored in pageData
+        onChange(basePath, index, fieldName, e.target.value);
     };
 
     return (
@@ -373,16 +374,7 @@ const CareersContentEditor = () => {
                 >
                     Careers Page Content Editor
                 </h1>
-                <div className="mb-6 max-w-4xl mx-auto">
-                    {toast.message && (
-                        <Alert
-                            show={true}
-                            type={toast.type}
-                            message={toast.message}
-                            onClose={closeToast}
-                        />
-                    )}
-                </div>
+               
                 <form onSubmit={handleSubmit} className="grid grid-cols-12 gap-8">
                     <div className="col-span-12">
                         <SidebarNavigation

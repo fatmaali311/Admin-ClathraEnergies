@@ -38,7 +38,7 @@ const WhoWeAreSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
                     value={pageData.who_we_are_section?.title || ''}
                     onChange={handleInputChange}
                 />
-                {/* حقل الفقرة/الـ paragraph - المطلوبة */}
+                {/* Paragraph / subtitle - required */}
                 <div>
                     <label className="block text-md font-semibold text-gray-700 mb-1">Paragraph / Subtitle</label>
                     <textarea

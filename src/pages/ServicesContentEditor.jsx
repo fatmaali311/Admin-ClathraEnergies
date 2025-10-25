@@ -38,11 +38,6 @@ const ServicesContentEditor = () => {
         closeToast,
     } = form;
 
-    // Log to debug newFiles and imageUrls (dev only)
-    import('../utils/logger').then(({ default: logger }) => {
-        logger.log('ServicesContentEditor - newFiles:', newFiles);
-        logger.log('ServicesContentEditor - imageUrls:', imageUrls);
-    });
 
     const scrollToSection = (id) => {
         const element = document.getElementById(id);

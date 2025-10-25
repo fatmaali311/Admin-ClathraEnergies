@@ -42,7 +42,7 @@ const CtaSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
             <LinkEditor 
                 linkObj={pageData.cta_section?.button || {}}
                 basePath="cta_section.button"
-                onChange={handleInputChange} // يستخدم دالة handleInputChange لأنها ليست مصفوفة
+                onChange={handleInputChange} // uses handleInputChange since this is not an array
                 allowRemoval={false}
             />
         </Card>
