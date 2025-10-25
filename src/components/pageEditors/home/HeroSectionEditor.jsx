@@ -3,6 +3,7 @@ import React from 'react';
 import Card from '../../ui/Card';
 import InputGroup from '../../ui/InputGroup';
 import MediaUpload from '../../ui/MediaUpload';
+import { getAdminImageUrl } from '../../../lib/mediaUtils';
 import Button from '../../ui/Button';
 import LinkEditor from '../LinkEditor';
 
@@ -31,7 +32,7 @@ const HeroSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
                 title="Hero Background Image"
                 name="home_hero_image"
                 fileState={newFiles.home_hero_image}
-                url={imageUrls.home_hero_image}
+                url={getAdminImageUrl(imageUrls.home_hero_image)}
                 handleFileChange={handleFileChange}
                 accept="image/*"
             />
