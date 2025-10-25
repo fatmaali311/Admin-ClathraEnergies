@@ -7,6 +7,7 @@ import SidebarNavigation from '../components/layout/SidebarNavigation';
 import Button from '../components/ui/Button';
 import usePageForm from '../hooks/usePageForm';
 import MediaUpload from '../components/ui/MediaUpload';
+import { getAdminImageUrl } from '../lib/mediaUtils';
 import InputGroup from '../components/ui/InputGroup';
 import Card from '../components/ui/Card';
 // Position management inline imports
@@ -127,7 +128,7 @@ const CareersContentEditor = () => {
                             title="Hero Background Image"
                             name="career_hero_image"
                             fileState={newFiles.career_hero_image}
-                            url={imageUrls.career_hero_image}
+                            url={getAdminImageUrl(imageUrls.career_hero_image)}
                             handleFileChange={handleFileChange}
                             accept="image/*"
                         />
@@ -161,7 +162,7 @@ const CareersContentEditor = () => {
                                     index={index}
                                     bubble={bubble}
                                     basePath="bubbles"
-                                    imageUrls={imageUrls}
+                                    imageUrls={Object.fromEntries(Object.entries(imageUrls).map(([k,v]) => [k,getAdminImageUrl(v)]))}
                                     newFiles={newFiles}
                                     onChange={handleArrayItemChange}
                                     onFileChange={handleFileChange}

@@ -3,6 +3,7 @@ import React from 'react';
 import Card from '../../ui/Card'; 
 import InputGroup from '../../ui/InputGroup'; 
 import MediaUpload from '../../ui/MediaUpload'; 
+import { getAdminImageUrl } from '../../../lib/mediaUtils';
 import LinkEditor from '../LinkEditor'; 
 
 const CtaSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
@@ -27,7 +28,7 @@ const CtaSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
                 title="CTA Background Image"
                 name="home_cta_image"
                 fileState={newFiles.home_cta_image}
-                url={imageUrls.home_cta_image}
+                url={getAdminImageUrl(imageUrls.home_cta_image)}
                 handleFileChange={handleFileChange}
                 accept="image/*"
             />

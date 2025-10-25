@@ -3,6 +3,7 @@ import React from 'react';
 import Card from '../../ui/Card';
 import InputGroup from '../../ui/InputGroup';
 import MediaUpload from '../../ui/MediaUpload';
+import { getAdminImageUrl } from '../../../lib/mediaUtils';
 import LinkEditor from '../LinkEditor';
 
 const WhoWeAreSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
@@ -27,7 +28,7 @@ const WhoWeAreSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
                 title="Who We Are Image"
                 name="home_about_image"
                 fileState={newFiles.home_about_image}
-                url={imageUrls.home_about_image}
+                url={getAdminImageUrl(imageUrls.home_about_image)}
                 handleFileChange={handleFileChange}
                 accept="image/*"
             />

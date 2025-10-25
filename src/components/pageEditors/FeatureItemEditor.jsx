@@ -2,6 +2,7 @@
 import React from 'react';
 import InputGroup from '../../components/ui/InputGroup';
 import MediaUpload from '../../components/ui/MediaUpload'; 
+import { getAdminImageUrl } from '../../lib/mediaUtils';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card'; 
 
@@ -34,7 +35,7 @@ const FeatureItemEditor = ({
                     title="Feature Icon"
                     name={imageName}
                     fileState={newFiles[imageName]}
-                    url={imageUrls[imageName]}
+                    url={getAdminImageUrl(imageUrls[imageName])}
                     handleFileChange={onFileChange}
                     accept="image/*"
                 />

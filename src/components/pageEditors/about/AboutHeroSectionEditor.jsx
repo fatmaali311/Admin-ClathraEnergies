@@ -2,6 +2,7 @@ import React from 'react';
 import Card from '../../ui/Card'; 
 import InputGroup from '../../ui/InputGroup'; 
 import MediaUpload from '../../ui/MediaUpload'; 
+import { getAdminImageUrl } from '../../../lib/mediaUtils';
 
 const AboutHeroSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
     const { 
@@ -25,7 +26,7 @@ const AboutHeroSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
                 title="Hero Background Image"
                 name="about_hero_image"
                 fileState={newFiles.about_hero_image}
-                url={imageUrls.about_hero_image}
+                url={getAdminImageUrl(imageUrls.about_hero_image)}
                 handleFileChange={handleFileChange}
                 accept="image/*"
             />

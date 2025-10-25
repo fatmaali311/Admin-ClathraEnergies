@@ -1,6 +1,7 @@
 import React from 'react';
 import InputGroup from '../../ui/InputGroup';
 import MediaUpload from '../../ui/MediaUpload';
+import { getAdminImageUrl } from '../../../lib/mediaUtils';
 import Button from '../../ui/Button';
 
 const DetailItemEditor = ({
@@ -29,7 +30,7 @@ const DetailItemEditor = ({
                     title="Icon Image"
                     name={imageName}
                     fileState={newFiles[imageName]}
-                    url={imageUrls[imageName]}
+                    url={getAdminImageUrl(imageUrls[imageName])}
                     handleFileChange={onFileChange}
                     accept="image/*"
                 />

@@ -7,6 +7,7 @@ import SidebarNavigation from '../components/layout/SidebarNavigation';
 import Button from '../components/ui/Button';
 import usePageForm from '../hooks/usePageForm';
 import MediaUpload from '../components/ui/MediaUpload';
+import { getAdminImageUrl } from '../lib/mediaUtils';
 import InputGroup from '../components/ui/InputGroup';
 import Card from '../components/ui/Card';
 import ContactTable from '../components/contact/ContactTable';
@@ -98,7 +99,7 @@ const ContactUsContentEditor = () => {
                             title="Hero Background Image"
                             name="contact_hero_image"
                             fileState={newFiles.contact_hero_image}
-                            url={imageUrls.contact_hero_image}
+                            url={getAdminImageUrl(imageUrls.contact_hero_image)}
                             handleFileChange={handleFileChange}
                             accept="image/*"
                         />
