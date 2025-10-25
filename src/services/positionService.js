@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+// Resolve API base from multiple possible sources (Vite env or global injection)
+const API_BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || (typeof window !== 'undefined' && (window.API_BASE_UR || window.API_BASE_URL)) || "http://localhost:3000";
 
 const getHeaders = (token, contentType = "application/json") => ({
   "Content-Type": contentType,

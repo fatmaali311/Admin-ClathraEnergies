@@ -48,6 +48,14 @@ const ConfigurationSettings = () => {
     setIsSubmitting(true);
 
     try {
+      // Client-side size guard for large video files to avoid long hangs/failures in production
+      const MAX_VIDEO_BYTES = 50 * 1024 * 1024; // 50 MB
+      if (fileState?.mainVideo && fileState.mainVideo.size > MAX_VIDEO_BYTES) {
+        setToast({ message: `Selected video is too large (max 50MB). Please compress or upload a smaller file.`, type: 'error' });
+        setIsSubmitting(false);
+        return;
+      }
+
       const formData = new FormData();
 
       // ✅ Deep clone config

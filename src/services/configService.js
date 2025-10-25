@@ -1,5 +1,33 @@
 // ✅ Service Layer for Configuration API
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+// Resolve API base from multiple possible sources (Vite env, alternate names, or global injected variable)
+const API_BASE_URL = import.meta.env.VITE_API_URL
+    || import.meta.env.VITE_API_BASE_URL
+    || (typeof window !== 'undefined' && (window.API_BASE_UR || window.API_BASE_URL))
+    || "http://localhost:3000";
+
+const normalizeMedia = (obj = {}) => {
+    const normalized = { ...obj };
+    // Normalize images
+    if (normalized.images) {
+        Object.keys(normalized.images).forEach(k => {
+            const v = normalized.images[k];
+            if (v && typeof v === 'string' && !v.startsWith('http')) {
+                // prepend API base
+                normalized.images[k] = `${API_BASE_URL}${v.startsWith('/') ? '' : '/'}${v}`;
+            }
+        });
+    }
+    // Normalize videos
+    if (normalized.videos) {
+        Object.keys(normalized.videos).forEach(k => {
+            const v = normalized.videos[k];
+            if (v && typeof v === 'string' && !v.startsWith('http')) {
+                normalized.videos[k] = `${API_BASE_URL}${v.startsWith('/') ? '' : '/'}${v}`;
+            }
+        });
+    }
+    return normalized;
+}
 
 export const getConfiguration = async () => {
     try {
@@ -16,10 +44,17 @@ export const getConfiguration = async () => {
             return null;
         }
 
-        const data = await response.json();
+        let data = await response.json();
+        // Ensure returned media URLs are absolute so the admin UI can load them in production
+        try {
+            data = normalizeMedia(data);
+        } catch (e) {
+            // ignore normalization errors and return raw data
+            console.warn('Could not normalize media URLs', e);
+        }
         // Replaced logger call with console.log
         console.log("✅ Configuration fetched:", data);
-        return data;
+    return data;
     } catch (error) {
         console.error("❌ Error fetching configuration:", error);
         return null;

@@ -1,4 +1,5 @@
 import React from 'react';
+import { getAdminImageUrl } from '../../lib/mediaUtils';
 import {
   Dialog,
   DialogTitle,
@@ -76,7 +77,7 @@ const ImagesSection = ({ images }) => (
         url ? (
           <Box key={key} sx={{ textAlign: 'center', width: { xs: '100%', sm: '200px' } }}>
             <img
-              src={url}
+              src={getAdminImageUrl(url)}
               alt={key}
               style={{
                 width: '100%',
@@ -240,7 +241,6 @@ export default function ServiceDetailsModal({ service, onClose }) {
             Action Buttons
           </Typography>
           <ButtonDetails button={main_button} label="Main Service Button" />
-         =
         </Box>
 
         {/* Images */}
