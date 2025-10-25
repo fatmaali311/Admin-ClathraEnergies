@@ -6,6 +6,7 @@ import {
 } from "@mui/material";
 import { ManagedTable } from '../Common';
 import { Visibility, Edit, Delete, Refresh as RefreshIcon } from "@mui/icons-material";
+import { getAdminImageUrl } from '../../lib/mediaUtils';
 import { PRIMARY_COLOR, HOVER_COLOR } from '../Common/styles';
 import ConfirmDialog from '../Common/ConfirmDialog';
 import { useState } from 'react';
@@ -45,7 +46,7 @@ export default function ServicesTable({
         return imageUrl ? (
           <div style={{ width: '60px', height: '60px', position: 'relative' }}>
             <img 
-              src={imageUrl}
+              src={getAdminImageUrl(imageUrl)}
               alt={`${r.title} service`}
               style={{
                 width: '100%',
