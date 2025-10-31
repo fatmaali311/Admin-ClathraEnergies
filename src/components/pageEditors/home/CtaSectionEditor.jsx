@@ -42,6 +42,7 @@ const CtaSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
             <h3 className="text-lg font-semibold text-gray-700 mt-6 mb-3 border-t pt-4">CTA Button (Single)</h3>
             <LinkEditor 
                 linkObj={pageData.cta_section?.button || {}}
+
                 basePath="cta_section.button"
                 onChange={handleInputChange} // uses handleInputChange since this is not an array
                 allowRemoval={false}

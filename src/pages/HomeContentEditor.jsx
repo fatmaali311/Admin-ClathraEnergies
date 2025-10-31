@@ -11,12 +11,15 @@ import HeroSectionEditor from '../components/pageEditors/home/HeroSectionEditor'
 import WhoWeAreSectionEditor from '../components/pageEditors/home/WhoWeAreSectionEditor';
 import FeaturesSectionEditor from '../components/pageEditors/home/FeaturesSectionEditor';
 import CtaSectionEditor from '../components/pageEditors/home/CtaSectionEditor';
+import PartnersSectionEditor from '../components/pageEditors/home/PartnersSectionEditor';
+
 
 const SECTIONS = [
     { id: 'hero-section', title: 'Hero Section' },
     { id: 'who-we-are-section', title: 'Who We Are' },
     { id: 'features-section', title: 'Features' },
     { id: 'cta-section', title: 'Call to Action' },
+    { id: 'partners-section', title: 'Partners' },
 ];
 
 const PRIMARY_COLOR = '#ADD0B3';
@@ -57,6 +60,9 @@ const HomeContentEditor = () => {
                 return <FeaturesSectionEditor {...sectionProps} />;
             case 'cta-section':
                 return <CtaSectionEditor {...sectionProps} />;
+            case 'partners-section':
+                return <PartnersSectionEditor {...sectionProps} />;
+
             default:
                 return null;
         }

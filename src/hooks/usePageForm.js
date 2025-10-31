@@ -12,6 +12,7 @@ const PAGE_SCHEMAS = {
         who_we_are_section: { title: '', sub_title: '', button: { name: '', link: '' } },
         features_section: [],
         cta_section: { title: '', button: { name: '', link: '' } },
+        partners_section: [],
     },
     'about-us': {
         hero_section: { title: '', sub_title: '', buttons: [] },
@@ -71,44 +72,58 @@ const usePageForm = (pageTitle) => {
         const fetchData = async () => {
             setIsLoading(true);
             const data = await getPageContentByTitle(pageTitle);
+
             if (data) {
                 const pageObj = data.pageObj?.pageObj || data.pageObj || {};
                 const updatedPageData = { title: pageTitle };
+
                 Object.keys(defaultSchema).forEach((key) => {
                     updatedPageData[key] = pageObj[key] || defaultSchema[key];
                 });
-                setPageData(updatedPageData);
+
                 setImageUrls(data.images || {});
+
+                // ✅ Fix for missing partners_section
+                if (!pageObj.partners_section && data.images) {
+                    const partnerKeys = Object.keys(data.images).filter(key =>
+                        key.startsWith('partners_section[')
+                    );
+                    if (partnerKeys.length > 0) {
+                        updatedPageData.partners_section = partnerKeys.map(() => ({}));
+                    }
+                }
+
+                setPageData(updatedPageData);
                 console.log(`usePageForm - Loaded imageUrls for ${pageTitle}:`, data.images);
             } else {
                 showToast(`Failed to load page "${pageTitle}". Using default schema.`, 'warning');
             }
+
             setIsLoading(false);
         };
+
         fetchData();
     }, [pageTitle, defaultSchema, showToast]);
 
     const handleInputChange = useCallback((e) => {
-        // Handle both DOM events and custom inputs
         const { name, value } = e.target || e;
         if (!name) {
             console.error('handleInputChange: No name provided', e);
             return;
         }
-          setPageData((prevData) => {
-        const keys = name.split('.');
-        let current = { ...prevData };
-        let temp = current;
-        for (let i = 0; i < keys.length - 1; i++) {
-            // ✅ FIX: Ensure intermediate objects exist before moving deeper
-            if (!temp[keys[i]] || typeof temp[keys[i]] !== 'object') {
-                temp[keys[i]] = {};
+        setPageData((prevData) => {
+            const keys = name.split('.');
+            let current = { ...prevData };
+            let temp = current;
+            for (let i = 0; i < keys.length - 1; i++) {
+                if (!temp[keys[i]] || typeof temp[keys[i]] !== 'object') {
+                    temp[keys[i]] = {};
+                }
+                temp = temp[keys[i]];
             }
-            temp = temp[keys[i]];
-        }
-        temp[keys[keys.length - 1]] = value;
-        return current;
-    });
+            temp[keys[keys.length - 1]] = value;
+            return current;
+        });
     }, []);
 
     const handleFileChange = useCallback((e) => {
@@ -119,54 +134,51 @@ const usePageForm = (pageTitle) => {
         }
     }, []);
 
-  const handleArrayItemChange = useCallback((arrayPath, index, field, value) => {
-    setPageData((prevData) => {
-        const keys = arrayPath.split('.');
-        const updatedData = { ...prevData };
-        let temp = updatedData;
+    const handleArrayItemChange = useCallback((arrayPath, index, field, value) => {
+        setPageData((prevData) => {
+            const keys = arrayPath.split('.');
+            const updatedData = { ...prevData };
+            let temp = updatedData;
 
-        for (let i = 0; i < keys.length - 1; i++) {
-            if (!temp[keys[i]]) temp[keys[i]] = {};
-            temp = temp[keys[i]];
-        }
+            for (let i = 0; i < keys.length - 1; i++) {
+                if (!temp[keys[i]]) temp[keys[i]] = {};
+                temp = temp[keys[i]];
+            }
 
-        const arrayKey = keys[keys.length - 1];
+            const arrayKey = keys[keys.length - 1];
+            if (!Array.isArray(temp[arrayKey])) {
+                console.warn(`Expected array at path "${arrayPath}", got:`, temp[arrayKey]);
+                temp[arrayKey] = [];
+            }
 
-        if (!Array.isArray(temp[arrayKey])) {
-            console.warn(`Expected array at path "${arrayPath}", got:`, temp[arrayKey]);
-            temp[arrayKey] = [];
-        }
+            const array = [...temp[arrayKey]];
+            array[index] = { ...(array[index] || {}), [field]: value };
+            temp[arrayKey] = array;
 
-        const array = [...temp[arrayKey]];
-        array[index] = { ...(array[index] || {}), [field]: value };
-        temp[arrayKey] = array;
+            return updatedData;
+        });
+    }, []);
 
-        return updatedData;
-    });
-}, []);
+    const handleAddItem = useCallback((arrayPath, defaultItem) => {
+        setPageData((prevData) => {
+            const keys = arrayPath.split('.');
+            const updatedData = { ...prevData };
+            let temp = updatedData;
 
+            for (let i = 0; i < keys.length - 1; i++) {
+                if (!temp[keys[i]]) temp[keys[i]] = {};
+                temp = temp[keys[i]];
+            }
 
-const handleAddItem = useCallback((arrayPath, defaultItem) => {
-    setPageData((prevData) => {
-        const keys = arrayPath.split('.');
-        const updatedData = { ...prevData };
-        let temp = updatedData;
+            const arrayKey = keys[keys.length - 1];
+            const array = Array.isArray(temp[arrayKey]) ? [...temp[arrayKey]] : [];
+            array.push(defaultItem);
 
-        for (let i = 0; i < keys.length - 1; i++) {
-            if (!temp[keys[i]]) temp[keys[i]] = {};
-            temp = temp[keys[i]];
-        }
+            temp[arrayKey] = array;
 
-        const arrayKey = keys[keys.length - 1];
-        const array = Array.isArray(temp[arrayKey]) ? [...temp[arrayKey]] : [];
-        array.push(defaultItem);
-
-        temp[arrayKey] = array;
-
-        return updatedData;
-    });
-}, []);
-
+            return updatedData;
+        });
+    }, []);
 
     const handleRemoveItem = useCallback((arrayPath, index) => {
         setPageData((prevData) => {
@@ -216,6 +228,17 @@ const handleAddItem = useCallback((arrayPath, defaultItem) => {
                     Object.keys(defaultSchema).forEach((key) => {
                         updatedPageData[key] = pageObj[key] || defaultSchema[key];
                     });
+
+                    // ✅ Ensure partners_section is rebuilt from images if missing
+                    if (!pageObj.partners_section && newData.images) {
+                        const partnerKeys = Object.keys(newData.images).filter(key =>
+                            key.startsWith('partners_section[')
+                        );
+                        if (partnerKeys.length > 0) {
+                            updatedPageData.partners_section = partnerKeys.map(() => ({}));
+                        }
+                    }
+
                     setPageData(updatedPageData);
                     setImageUrls(newData.images || {});
                     console.log(`usePageForm - Updated imageUrls for ${pageTitle}:`, newData.images);
