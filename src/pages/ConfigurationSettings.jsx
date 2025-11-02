@@ -66,7 +66,12 @@ const ConfigurationSettings = () => {
         (link) => link.name && link.link && link.iconClass
       );
 
-      // ✅ 2. Clean up working hours
+      // ✅ 2. Clean up working hours and working title
+      if (configToSend.hoursTitle) {
+        configToSend.working_title = configToSend.hoursTitle;
+        delete configToSend.hoursTitle;
+      }
+      
       configToSend.workingHours = (configToSend.workingHours || [])
         .filter((item) => {
           if (item.isClosed) {
@@ -206,6 +211,7 @@ const ConfigurationSettings = () => {
               <HoursSection
                 config={config}
                 handleArrayAction={handleArrayAction}
+                handleChange={handleNestedChange}
                 PRIMARY_COLOR={PRIMARY_COLOR}
               />
             )}

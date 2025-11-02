@@ -10,6 +10,7 @@ const INITIAL_CONFIG = {
   contactInfo: { },
   socialLinks: [],
   workingHours: [],
+  working_title: '',
   mediaUrls: {
     mainLogoUrl: '',
     secondaryLogoUrl: '',
