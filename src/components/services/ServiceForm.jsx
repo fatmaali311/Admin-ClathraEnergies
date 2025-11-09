@@ -41,23 +41,36 @@ const initialServiceState = {
 
 const STEPS = ['Basic Info', 'Details & Content', 'Media & Actions'];
 
+// Ensure any incoming service object has the expected nested shape so
+// components can safely read `data`, `data.serviceObj` and `data.images`.
+function normalizeService(svc) {
+  // deep clone base shape
+  const base = JSON.parse(JSON.stringify(initialServiceState));
+  if (!svc) return base;
+
+  // shallow merge then ensure nested fields exist
+  const merged = { ...base, ...svc };
+  merged.data = merged.data || JSON.parse(JSON.stringify(initialServiceState.data));
+  merged.data.serviceObj = merged.data.serviceObj || JSON.parse(JSON.stringify(initialServiceState.data.serviceObj));
+  merged.data.images = merged.data.images || {};
+  // ensure title exists
+  merged.title = merged.title || '';
+  return merged;
+}
+
 export default function ServiceForm({ service, onClose }) {
   const isEdit = !!service;
   const { saveService, loading: saving, error: saveError, setError: setHookError } = useServices();
   const { showToast } = useToast();
 
-  const [formData, setFormData] = useState(service || initialServiceState);
+  const [formData, setFormData] = useState(() => normalizeService(service));
   const [files, setFiles] = useState({});
   const [activeStep, setActiveStep] = useState(0);
   const [localError, setLocalError] = useState('');
   // detail icons will be image uploads only (stored under data.images with a file-key)
 
   useEffect(() => {
-    if (service) {
-      setFormData(service);
-    } else {
-      setFormData(initialServiceState);
-    }
+    setFormData(normalizeService(service));
   }, [service]);
 
   const handleNext = () => setActiveStep((prev) => prev + 1);
@@ -155,9 +168,9 @@ export default function ServiceForm({ service, onClose }) {
       return false;
     }
     if (activeStep === 1) {
-      const hasValidDetails = formData.data.serviceObj.details.every(detail => 
-        detail.title.trim() && Object.values(detail.points).some(p => p.trim())
-      );
+      const hasValidDetails = (formData?.data?.serviceObj?.details || []).every(detail => 
+          detail.title?.trim() && Object.values(detail.points || {}).some(p => p?.trim())
+        );
       if (!hasValidDetails) {
         setLocalError('All detail sections must have a title and at least one point with content.');
         return false;
@@ -173,7 +186,7 @@ export default function ServiceForm({ service, onClose }) {
     setHookError('');
 
     try {
-      const serviceObj = formData.data.serviceObj;
+  const serviceObj = formData?.data?.serviceObj || initialServiceState.data.serviceObj;
       const finalServiceJson = {
         title: formData.title,
         ...serviceObj,
@@ -191,7 +204,7 @@ export default function ServiceForm({ service, onClose }) {
   };
 
   const renderStepContent = (step) => {
-    const obj = formData.data.serviceObj;
+  const obj = formData?.data?.serviceObj || initialServiceState.data.serviceObj;
 
     switch (step) {
       case 0:
@@ -262,7 +275,7 @@ export default function ServiceForm({ service, onClose }) {
             {obj.details.map((detail, index) => {
               const serviceTitle = formData.title || 'service';
               const iconFileKey = `${serviceTitle}-details-icon-${index + 1}`;
-              const iconPreview = formData.data.images?.[iconFileKey];
+              const iconPreview = formData?.data?.images?.[iconFileKey];
               
               return (
                 <Paper key={index} elevation={2} sx={{ p: 4, borderRadius: '12px' }}>
@@ -403,11 +416,11 @@ export default function ServiceForm({ service, onClose }) {
                     Upload Main Service Image
                   </Button>
                 </label>
-                {formData.data.images['service-image'] && (
+                {formData?.data?.images?.['service-image'] && (
                   <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Chip label="Main Image Loaded" color="success" size="small" />
                     <img 
-                      src={formData.data.images['service-image']} 
+                      src={formData?.data?.images?.['service-image']} 
                       alt="Service Preview" 
                       style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
                     />
