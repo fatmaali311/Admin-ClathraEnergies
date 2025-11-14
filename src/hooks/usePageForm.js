@@ -51,6 +51,26 @@ const PAGE_SCHEMAS = {
         },
         gps_location: '',
     },
+    'our-technology': {
+        hero_section: { title: '', sub_title: '' },
+        steps: [
+            { id: 1, text: 'Biogas Pre-treatment at the Farm' },
+            { id: 2, text: 'Storing Biogas in compact solid form.' },
+            { id: 3, text: 'Transport of Solidified Biogas to Central Hub' },
+            { id: 4, text: 'Centralized Recovery and Purification' },
+            { id: 5, text: 'Valorization of bioCH₄ and bioCO₂' },
+            { id: 6, text: 'Agent Recycling and Return to Farms' },
+        ],
+    },
+    'why-technology': {
+        hero_section: { title: '', sub_title: '' },
+        // textual sections reflecting the frontend layout
+        stats_section: { methane_text: '100-170 Nm3 methane / m3', brand_text: 'ClathraEnergiesTM' },
+        temp_section: { left_label: 'ClathraEnergiesTM', left_temp: '-20°C', right_label: 'BML', right_temp: '-162°C' },
+        safe_section: { title: 'Safe and Green Technology' },
+        economics_section: { capex_text: '25 - 50 % CAPEX', opex_text: '18 - 25 % OPEX' },
+   
+    },
 };
 
 const usePageForm = (pageTitle) => {

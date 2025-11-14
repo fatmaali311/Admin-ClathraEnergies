@@ -37,10 +37,12 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
   // Content Management Links
   const contentNavItems = [
-   { name: 'Home', path: '/dashboard/content/home', icon: <MdHome size={20} /> },
+  { name: 'Home', path: '/dashboard/content/home', icon: <MdHome size={20} /> },
     { name: 'About Us', path: '/dashboard/content/about-us', icon: <MdInfo size={20} /> },
     { name: 'Services', path: '/dashboard/content/services', icon: <MdBuild size={20} /> },
     { name: 'Careers', path: '/dashboard/content/careers', icon: <MdWork size={20} /> },
+   { name: 'Our Technology', path: '/dashboard/content/our-technology', icon: <MdInfo size={20} /> },
+   { name: 'Why Technology', path: '/dashboard/content/why-technology', icon: <MdInfo size={20} /> },
     { name: 'Applications', path: '/dashboard/content/applications', icon: <MdApps size={20} /> },
     { name: 'Contact Us', path: '/dashboard/content/contact-us', icon: <MdContacts size={20} /> },
   

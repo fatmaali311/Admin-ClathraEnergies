@@ -15,6 +15,7 @@ const INITIAL_CONFIG = {
     mainLogoUrl: '',
     secondaryLogoUrl: '',
     mainVideoUrl: '',
+    mainImageUrl: '',
   },
   copyright: '',
 };
@@ -37,12 +38,17 @@ const useConfigForm = (token) => {
         setIsLoading(true);
         const data = await getConfiguration(token);
         if (data?.configObj) {
+          // Check if main_video is in videos or images
+          const mainVideoUrl = data.videos?.main_video || data.images?.main_video || '';
+          const mainImageUrl = data.images?.main_video || '';
+          
           setConfig({
             ...data.configObj,
             mediaUrls: {
               mainLogoUrl: data.images?.main_logo || '',
               secondaryLogoUrl: data.images?.secondary_logo || '',
-              mainVideoUrl: data.videos?.main_video || '',
+              mainVideoUrl: mainVideoUrl,
+              mainImageUrl: mainImageUrl,
             },
           });
         }

@@ -218,8 +218,7 @@ export default function ServiceForm({ service, onClose }) {
                 required
                 value={formData.title}
                 onChange={(e) => handleTextChange(e, 'title')}
-                helperText={isEdit ? 'Changing the title affects the URL.' : 'Example: web-development'}
-                InputProps={{ readOnly: isEdit }}
+                helperText={isEdit ? 'Edit the title carefully as it affects the service URL.' : 'Example: web-development'}
                 sx={{ mb: 2 }}
               />
             </Grid>
