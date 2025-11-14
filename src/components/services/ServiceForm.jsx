@@ -52,7 +52,13 @@ function normalizeService(svc) {
   const merged = { ...base, ...svc };
   merged.data = merged.data || JSON.parse(JSON.stringify(initialServiceState.data));
   merged.data.serviceObj = merged.data.serviceObj || JSON.parse(JSON.stringify(initialServiceState.data.serviceObj));
-  merged.data.images = merged.data.images || {};
+  
+  // IMPORTANT: Preserve existing images from backend (URLs) so they display in edit mode
+  merged.data.images = {
+    ...(svc?.data?.images || {}),  // Keep existing backend URLs
+    ...(merged.data.images || {}), // Allow overrides
+  };
+  
   // ensure title exists
   merged.title = merged.title || '';
   return merged;
