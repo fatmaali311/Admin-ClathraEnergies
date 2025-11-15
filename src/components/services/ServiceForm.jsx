@@ -15,6 +15,7 @@ import {
 import { useServices } from '../../hooks/useServices';
 import { useToast } from '../../hooks/useToast';
 import { toServiceFormData } from '../../services/servicesApi';
+import { getAdminImageUrl } from '../../lib/mediaUtils';
 
 // --- Constants ---
 const PRIMARY_COLOR = "#ADD0B3";
@@ -336,7 +337,7 @@ export default function ServiceForm({ service, onClose }) {
                     {iconPreview && (
                       <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
                         <img 
-                          src={iconPreview} 
+                          src={iconPreview.startsWith('blob:') || iconPreview.startsWith('http') ? iconPreview : getAdminImageUrl(iconPreview)} 
                           alt="Icon Preview" 
                           style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
                         />
@@ -426,7 +427,7 @@ export default function ServiceForm({ service, onClose }) {
                   <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Chip label="Main Image Loaded" color="success" size="small" />
                     <img 
-                      src={formData?.data?.images?.['service-image']} 
+                      src={formData?.data?.images?.['service-image'].startsWith('blob:') || formData?.data?.images?.['service-image'].startsWith('http') ? formData?.data?.images?.['service-image'] : getAdminImageUrl(formData?.data?.images?.['service-image'])} 
                       alt="Service Preview" 
                       style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
                     />
