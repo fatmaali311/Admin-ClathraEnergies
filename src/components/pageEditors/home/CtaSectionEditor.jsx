@@ -1,4 +1,3 @@
-// src/components/pageEditors/home/CtaSectionEditor.jsx
 import React from 'react';
 import Card from '../../ui/Card'; 
 import InputGroup from '../../ui/InputGroup'; 
@@ -44,7 +43,7 @@ const CtaSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
                 linkObj={pageData.cta_section?.button || {}}
 
                 basePath="cta_section.button"
-                onChange={handleInputChange} // uses handleInputChange since this is not an array
+                onChange={handleInputChange} 
                 allowRemoval={false}
             />
         </Card>

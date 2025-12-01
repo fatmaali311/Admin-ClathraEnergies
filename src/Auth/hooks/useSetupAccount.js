@@ -1,4 +1,3 @@
-// src/hooks/useSetupAccount.js
 import { useCallback } from 'react';
 import { completeProfile } from '../services/userService';
 import { useNavigate, useLocation } from 'react-router-dom';

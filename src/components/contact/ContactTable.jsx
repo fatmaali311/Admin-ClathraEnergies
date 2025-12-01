@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { useAuth } from "../../contexts/AuthContext"; // Import useAuth to get token
-import { updateContactReadStatus } from "../../services/contactService"; // Import update API
+import { useAuth } from "../../contexts/AuthContext"; 
+import { updateContactReadStatus } from "../../services/contactService"; 
 import {
   Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, Dialog,
@@ -8,10 +8,10 @@ import {
   CircularProgress, 
 } from "@mui/material";
 import { ManagedTable } from '../Common';
-import { Visibility, Close as CloseIcon, MarkEmailRead, MarkEmailUnread, Refresh as RefreshIcon } from "@mui/icons-material"; // Import RefreshIcon
+import { Visibility, Close as CloseIcon, MarkEmailRead, MarkEmailUnread, Refresh as RefreshIcon } from "@mui/icons-material"; 
 import { PRIMARY_COLOR, HOVER_COLOR } from '../Common/styles';
 
-// Reusable component to apply styling based on read status (No change)
+// Reusable component to apply styling based on read status 
 const ReadStatusIndicator = ({ isRead }) => (
     <Box 
         display="flex" 
@@ -34,7 +34,7 @@ export default function ContactTable({ contacts, loading, refetchContacts }) {
   const [selectedContact, setSelectedContact] = useState(null);
   const [updateLoadingId, setUpdateLoadingId] = useState(null); 
 
-  // Helper function to render a detail row in the modal (No change)
+  // Helper function to render a detail row in the modal 
   const DetailRow = ({ label, value, isMessage = false }) => (
     <Box className={`flex ${isMessage ? 'flex-col' : 'justify-between'} py-2 border-b border-gray-200 last:border-b-0`}>
       <Typography variant="body1" className="font-semibold text-gray-600 w-1/3 min-w-max">
@@ -50,7 +50,7 @@ export default function ContactTable({ contacts, loading, refetchContacts }) {
     </Box>
   );
 
-  // Handler for marking read/unread status (No change)
+  // Handler for marking read/unread status 
   const handleToggleReadStatus = async (contactId, currentStatus) => {
     if (!token) return;
 
@@ -70,7 +70,7 @@ export default function ContactTable({ contacts, loading, refetchContacts }) {
     setUpdateLoadingId(null);
   };
   
-  // Handler for opening the modal. Should mark as read if currently unread. (No change)
+  // Handler for opening the modal. Should mark as read if currently unread. 
   const handleViewContact = async (contact) => {
     // Open modal to view contact details. Do NOT auto-toggle read status here.
     // The user can explicitly mark Read/Unread using the button in the modal.
@@ -141,7 +141,7 @@ export default function ContactTable({ contacts, loading, refetchContacts }) {
         )}
       />
 
-  {/* --- Modal (Dialog) - No Change --- */}
+  {/*  Modal (Dialog)  */}
       <Dialog
         open={!!selectedContact}
         onClose={() => setSelectedContact(null)}

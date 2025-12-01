@@ -39,8 +39,6 @@ export function useForgotPassword() {
     loading,
     message,
     error,
-    // Add a state to know if the email has been successfully sent (to show a success screen/message)
-
     sent: !!message, 
   };
 }

@@ -152,7 +152,6 @@ const ResetPasswordForm = () => {
         </motion.div>
       </form>
 
-      {/* 🟢 Replaced inline error div with Alert component */}
       <motion.div variants={itemVariants} className="mt-6">
         <Alert
           show={!!apiError}

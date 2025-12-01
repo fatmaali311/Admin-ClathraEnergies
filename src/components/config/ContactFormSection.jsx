@@ -1,6 +1,6 @@
 import React from 'react';
-import Card from '../ui/Card'; // Reusable Card
-import InputGroup from '../ui/InputGroup'; // Reusable Input
+import Card from '../ui/Card'; 
+import InputGroup from '../ui/InputGroup'; 
 
 const ContactFormSection = ({ config, handleChange }) => {
     return (

@@ -10,7 +10,6 @@ import MediaUpload from '../components/ui/MediaUpload';
 import { getAdminImageUrl } from '../lib/mediaUtils';
 import InputGroup from '../components/ui/InputGroup';
 import Card from '../components/ui/Card';
-// Position management inline imports
 import { useAuth } from '../contexts/AuthContext';
 import { usePositions } from '../hooks/usePositions';
 import PositionTable from '../components/position/PositionTable';

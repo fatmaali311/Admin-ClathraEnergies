@@ -1,12 +1,11 @@
 import { useCallback } from 'react';
 import { resetPassword } from '../services/userService';
-import { useNavigate, useLocation } from 'react-router-dom'; // Changed to useLocation to read query param
+import { useNavigate, useLocation } from 'react-router-dom';
 import { formatAuthError } from '../utils/authHelpers';
 
 
 
 export function useResetPassword() {
-  // The token is now retrieved from the URL query via ?token=...
   const { search } = useLocation();
   const query = new URLSearchParams(search);
   const token = query.get('token');
@@ -26,7 +25,6 @@ export function useResetPassword() {
 
       try {
         const payload = { password: values.password };
-        // resetPassword now uses the token as a path parameter in the API call
         const { ok, status, data } = await resetPassword(token, payload);
 
         if (ok) {

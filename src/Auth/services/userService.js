@@ -1,8 +1,6 @@
-// src/services/userService.js
 
-// Import required helpers from authService
 import { authHeaders } from './authService';
-// Assuming safeParseJSON is available or defined here (copied below for completeness)
+
 async function safeParseJSON(response) {
  try {
   return await response.json();
@@ -48,7 +46,7 @@ export async function resetPassword(token, passwordObj) {
  return { ok: res.ok, status: res.status, data };
 }
 // PATCH /users/complete-profile/{token}
-// 👇 MUST have the 'export' keyword here
+
 export async function completeProfile(token, body) {
  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
  const res = await fetch(`${API_BASE_URL}/users/complete-profile/${token}`, {
@@ -58,7 +56,6 @@ export async function completeProfile(token, body) {
   body: JSON.stringify(body),
  });
  
- // Assuming you have safeParseJSON defined/imported
  const data = await safeParseJSON(res); 
  return { ok: res.ok, status: res.status, data };
 }
@@ -73,7 +70,6 @@ export async function forgotPassword(email) {
   body: JSON.stringify({ email }),
  });
  
- // Assuming you have safeParseJSON defined/imported
  const data = await safeParseJSON(res); 
  return { ok: res.ok, status: res.status, data };
 }

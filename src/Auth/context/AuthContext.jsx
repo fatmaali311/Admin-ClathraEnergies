@@ -1,4 +1,3 @@
-// src/Auth/context/AuthContext.jsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getUserData, updateProfile } from '../services/userService';
 

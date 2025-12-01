@@ -103,7 +103,6 @@ const usePageForm = (pageTitle) => {
 
                 setImageUrls(data.images || {});
 
-                // ✅ Fix for missing partners_section
                 if (!pageObj.partners_section && data.images) {
                     const partnerKeys = Object.keys(data.images).filter(key =>
                         key.startsWith('partners_section[')

@@ -1,5 +1,3 @@
-// src/components/modals/DeleteConfirmationModal.jsx
-
 import ActionModal from '../../components/Common/ActionModal';
 
 const DeleteConfirmationModal = ({ user, onConfirm, onCancel, isLoading }) => {

@@ -1,4 +1,3 @@
-// src/components/ui/TimeInput.jsx
 import React from 'react';
 
 const TimeInput = ({ name, value, onChange, disabled = false }) => (

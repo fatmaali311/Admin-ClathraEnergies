@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import DashboardLayout from '../layout/DashboardLayout'; // From your layout
-import Toast from '../components/ui/Toast'; // From your layout
+import DashboardLayout from '../layout/DashboardLayout'; 
+import Toast from '../components/ui/Toast'; 
 import { useAuth } from "../contexts/AuthContext";
 import { usePositions } from "../hooks/usePositions";
-import { useToast } from "../hooks/useToast"; // NEW
+import { useToast } from "../hooks/useToast"; 
 import PositionTable from "../components/position/PositionTable";
 import PositionFormModal from "../components/position/PositionFormModal";
 import PositionDetailsModal from "../components/position/PositionDetailsModal";
@@ -15,7 +15,7 @@ const PRIMARY_COLOR = "#ADD0B3";
 
 export default function PositionManagementPage() {
   const { token, loading: authLoading } = useAuth();
-  const { toast, showToast, closeToast } = useToast(); // NEW TOAST HOOK
+  const { toast, showToast, closeToast } = useToast(); 
 
   const [page, setPage] = useState(1);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -75,7 +75,6 @@ export default function PositionManagementPage() {
   };
 
   if (authLoading) {
-    // Using a simpler spinner for this example, you'd use your custom LoadingSpinner
     return <div className="flex justify-center py-10 text-xl text-gray-700">🔄 Checking session...</div>;
   }
 
@@ -157,7 +156,6 @@ export default function PositionManagementPage() {
         loading={isDeleting}
       />
       
-      {/* Your custom Toast component */}
       <Toast
           message={toast.message}
           type={toast.type}

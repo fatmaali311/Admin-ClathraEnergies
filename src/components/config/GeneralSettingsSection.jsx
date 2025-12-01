@@ -119,7 +119,7 @@ const GeneralSettingsSection = ({ config, handleChange, PRIMARY_COLOR }) => {
           </div>
         </div>
 
-        {/* 🚀 UPDATED: Hero Gradient Opacity Control */}
+        {/*  Hero Gradient Opacity Control */}
         <div className="md:col-span-2">
           <label className="block text-md font-semibold text-gray-700 mb-2">
             Hero Gradient Opacity (Density)
@@ -135,7 +135,7 @@ const GeneralSettingsSection = ({ config, handleChange, PRIMARY_COLOR }) => {
               value={config.heroGradientOpacity}
               onChange={handleChange}
               className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
-              style={{ accentColor: PRIMARY_COLOR }} // Style slider handle
+              style={{ accentColor: PRIMARY_COLOR }} 
               title="Drag to change opacity"
             />
             {/* Text Input for precise value */}

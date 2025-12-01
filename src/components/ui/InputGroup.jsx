@@ -1,4 +1,3 @@
-// src/components/ui/InputGroup.jsx
 import React from 'react';
 
 const InputGroup = ({ title, name, value, onChange, type = 'text', className = '' }) => (

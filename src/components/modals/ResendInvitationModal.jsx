@@ -1,5 +1,3 @@
-// src/components/modals/ResendInvitationModal.jsx
-
 import ActionModal from '../../components/Common/ActionModal';
 
 const ResendInvitationModal = ({ user, onConfirm, onCancel, isLoading }) => {

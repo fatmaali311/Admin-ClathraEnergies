@@ -35,7 +35,6 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
 
-            {/* Token-based routes must use the path parameter :token */}
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/setup" element={<SetupAccount />} />
            <Route path="/verify-email" element={<VerifyEmailChangePage />} />

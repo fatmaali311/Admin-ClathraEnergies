@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import DashboardLayout from '../layout/DashboardLayout'; // From your layout
-import Toast from '../components/ui/Toast'; // From your layout
+import DashboardLayout from '../layout/DashboardLayout'; 
+import Toast from '../components/ui/Toast'; 
 import { useAuth } from "../contexts/AuthContext";
 import { useApplications } from "../hooks/useApplications";
 import { usePositions } from "../hooks/usePositions";
-import { useToast } from "../hooks/useToast"; // NEW
+import { useToast } from "../hooks/useToast";
 import ApplicationTable from "../components/application/ApplicationTable";
 import ApplicationDetailsModal from "../components/application/ApplicationDetailsModal";
 import { ConfirmDialog } from "../components/Common/ConfirmDialog";
@@ -15,7 +15,7 @@ const PRIMARY_COLOR = "#ADD0B3";
 
 export default function ApplicationManagementPage() {
   const { token, loading: authLoading } = useAuth();
-  const { toast, showToast, closeToast } = useToast(); // NEW TOAST HOOK
+  const { toast, showToast, closeToast } = useToast(); 
 
   const [page, setPage] = useState(1);
   const [filterStatus, setFilterStatus] = useState('');
@@ -147,7 +147,7 @@ export default function ApplicationManagementPage() {
         loading={isDeleting}
       />
       
-      {/* Your custom Toast component */}
+
       <Toast
           message={toast.message}
           type={toast.type}

@@ -36,7 +36,7 @@ const ForgotPasswordForm = () => {
 
   const { values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting, isValid } = formik;
 
-  // ✅ Show success message
+  //  Show success message
   if (sent) {
     return (
       <motion.div
@@ -68,7 +68,7 @@ const ForgotPasswordForm = () => {
     );
   }
 
-  // 🧠 Default Form
+  //  Default Form
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible">
       <AuthFormHeader

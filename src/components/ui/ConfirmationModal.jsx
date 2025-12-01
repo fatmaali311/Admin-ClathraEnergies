@@ -1,12 +1,10 @@
-// src/components/ui/ConfirmationModal.jsx
 import React from 'react';
-import Button from './Button'; // Assuming you have a Button component
+import Button from './Button'; 
 
 const ConfirmationModal = ({ open, onClose, onConfirm, title, message }) => {
   if (!open) return null;
 
   return (
-    // Simple overlay styling - you may need to adjust your Tailwind setup
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded-lg shadow-2xl max-w-sm w-full">
         <h3 className="text-xl font-bold mb-4">{title}</h3>

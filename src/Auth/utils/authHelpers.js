@@ -19,7 +19,7 @@ export const hasPermission = (userRole, requiredRole) => {
     superadmin: 2,
     admin: 1
   };
-  // The check remains correct: a null/undefined role will return false, but we handle the loading state elsewhere.
+  
   return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
 };
 

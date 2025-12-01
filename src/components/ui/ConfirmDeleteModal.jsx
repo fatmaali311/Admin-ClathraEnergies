@@ -3,7 +3,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, 
 import { DeleteForever, Close as CloseIcon } from '@mui/icons-material';
 
 const PRIMARY_COLOR = "#ADD0B3";
-const DANGER_COLOR = "#DC2626"; // Red-600
+const DANGER_COLOR = "#DC2626"; 
 
 export default function ConfirmDeleteModal({ open, onClose, onConfirm, itemType, itemName, isDeleting }) {
   return (

@@ -4,7 +4,7 @@ import { useSetupAccount } from '../../hooks/useSetupAccount';
 import AuthFormHeader from '../ui/AuthFormHeader';
 import AuthInputField from '../ui/AuthInputField';
 import AuthButton from '../ui/AuthButton';
-import Alert from '../../../components/ui/Alert'; // 🟢 Import Alert component
+import Alert from '../../../components/ui/Alert'; 
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
@@ -57,7 +57,6 @@ const SetupAccountForm = () => {
   const message = status?.success;
   const apiError = status?.error;
 
-  // 🟢 Updated success state to use Alert
   if (setupComplete) {
     return (
       <motion.div

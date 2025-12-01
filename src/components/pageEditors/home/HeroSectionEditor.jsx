@@ -1,4 +1,3 @@
-// src/components/pageEditors/home/HeroSectionEditor.jsx
 import React from 'react';
 import Card from '../../ui/Card';
 import InputGroup from '../../ui/InputGroup';

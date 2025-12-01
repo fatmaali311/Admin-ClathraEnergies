@@ -8,7 +8,7 @@ const itemVariants = {
 
 /**
  * Auth Input Field Component
- * Reusable input field for auth forms in ClathraEnergies Admin Dashboard
+ * Reusable input field for auth forms 
  */
 const AuthInputField = ({
   id,

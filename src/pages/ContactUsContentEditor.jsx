@@ -19,7 +19,6 @@ const SECTIONS = [
     { id: 'paragraph-section', title: 'Paragraph' },
     { id: 'form-section', title: 'Contact Form' },
     { id: 'gps-section', title: 'GPS Location' },
-    // submissions intentional last
     { id: 'submissions', title: 'Submissions' },
 ];
 
@@ -275,7 +274,7 @@ const ContactUsContentEditor = () => {
                 >
                     Contact Us Page Content Editor
                 </h1>
-             
+
                 <form onSubmit={handleSubmit} className="grid grid-cols-12 gap-8">
                     <div className="col-span-12">
                         <SidebarNavigation

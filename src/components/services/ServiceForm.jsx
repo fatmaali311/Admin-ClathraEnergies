@@ -30,7 +30,7 @@ const initialServiceState = {
       paragraph: '',
       details: [{ 
         title: '', 
-        icon: '', // FontAwesome class or image key
+        icon: '', 
         points: { point1: '', point2: '', point3: '' } 
       }],
       main_button: { name: 'Learn More', link: '/services' },
@@ -74,7 +74,7 @@ export default function ServiceForm({ service, onClose }) {
   const [files, setFiles] = useState({});
   const [activeStep, setActiveStep] = useState(0);
   const [localError, setLocalError] = useState('');
-  // detail icons will be image uploads only (stored under data.images with a file-key)
+
 
   useEffect(() => {
     setFormData(normalizeService(service));
@@ -460,7 +460,6 @@ export default function ServiceForm({ service, onClose }) {
                   sx={{ mb: 2 }}
                 />
               </Box>
-              {/* Home Page Button removed as per admin request; main button remains */}
             </Grid>
           </Grid>
         );

@@ -10,7 +10,6 @@ import { MdMenu, MdSearch } from 'react-icons/md';
 /**
  * Header Component
  * Full-width, fixed header with search, profile menu, and mobile toggle.
- * Uses #388E3C (Dark Green) as primary color and #ADD0B3 (Light Green) as accent.
  */
 const Header = ({ toggleSidebar }) => {
     const { user, logout } = useAuth();
@@ -57,7 +56,7 @@ const Header = ({ toggleSidebar }) => {
         }
     }, [navigate, logout]); // Dependency array for useCallback is added
 
-    // Note: handleProfileClick is removed as Link handles navigation
+
 
     return (
         <>
@@ -145,7 +144,7 @@ const Header = ({ toggleSidebar }) => {
                             <button
                                 onClick={handleLogout}
                                 className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-[#ADD0B3] hover:text-[#388E3C] transition-colors font-medium"
-                                role="menuitem" // ✅ Accessibility fix
+                                role="menuitem" 
                             >
                                 Logout
                             </button>

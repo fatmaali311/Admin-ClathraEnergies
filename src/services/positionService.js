@@ -1,4 +1,3 @@
-// Resolve API base from multiple possible sources (Vite env or global injection)
 const API_BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || (typeof window !== 'undefined' && (window.API_BASE_UR || window.API_BASE_URL)) || "http://localhost:3000";
 
 const getHeaders = (token, contentType = "application/json") => ({
@@ -87,7 +86,6 @@ export const deletePosition = async (token, id) => {
       throw new Error(errText);
     }
 
-    // DELETE usually returns 200 with no content or a simple message
     return response.status === 200 ? { message: "Position deleted successfully" } : null;
   } catch (error) {
     console.error("❌ Error deleting position:", error);

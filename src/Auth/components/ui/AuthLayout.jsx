@@ -8,7 +8,7 @@ const itemVariants = {
 
 /**
  * Auth Layout Component
- * Shared layout for authentication pages in ClathraEnergies Admin Dashboard
+ * Shared layout for authentication pages 
  */
 const AuthLayout = ({ 
   leftContent, 

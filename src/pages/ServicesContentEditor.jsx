@@ -16,7 +16,6 @@ import LinkEditor from '../components/pageEditors/LinkEditor';
 
 const SECTIONS = [
     { id: 'hero-section', title: 'Hero Banner' },
-    // local entry to show the Services Dashboard inline
     { id: 'services-dashboard', title: 'Services' },
 ];
 
@@ -139,7 +138,6 @@ const ServicesContentEditor = () => {
                     </div>
                     <div className="col-span-12 space-y-10">
                         {renderSection}
-                        {/* Only show save button for editable sections (not the services dashboard) */}
                         {activeSection !== 'services-dashboard' && (
                             <Button
                                 type="submit"

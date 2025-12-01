@@ -8,7 +8,8 @@ const itemVariants = {
 
 /**
  * Auth Button Component
- * Reusable button for auth forms in ClathraEnergies Admin Dashboard
+ * Reusable button for auth forms with loading state and variants.
+ *
  */
 const AuthButton = ({
   type = 'button',

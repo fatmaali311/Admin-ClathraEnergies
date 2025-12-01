@@ -1,5 +1,3 @@
-// src/pages/UserManagement.jsx
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { hasPermission } from "../../Auth/utils/authHelpers";
@@ -42,7 +40,7 @@ const HOVER_COLOR = "#8CB190";
 
 // --- Main Component ---
 const UserManagement = () => {
-  const { user: authUser, loading: authLoading } = useAuth(); // renamed for clarity
+  const { user: authUser, loading: authLoading } = useAuth(); 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

@@ -7,7 +7,7 @@ import {
   ToggleButtonGroup, ToggleButton
 } from "@mui/material";
 
-// --- Constants (Matching UserManagement.jsx) ---
+
 const PRIMARY_COLOR = "#ADD0B3";
 const HOVER_COLOR = "#8CB190";
 

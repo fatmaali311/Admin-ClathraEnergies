@@ -1,4 +1,3 @@
-// src/components/pageEditors/LinkEditor.jsx
 import React from "react";
 import InputGroup from "../ui/InputGroup";
 

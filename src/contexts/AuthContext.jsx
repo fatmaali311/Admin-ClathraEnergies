@@ -1,4 +1,3 @@
-// src/contexts/AuthContext.jsx
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { logoutRequest, fetchUserProfile } from '../Auth/services/authService';
 const AuthContext = createContext();
@@ -51,7 +50,7 @@ export function AuthProvider({ children }) {
     }, []);
 
 
-    // FIX: Logic to fetch user profile using the token on page refresh
+    //Logic to fetch user profile using the token on page refresh
     useEffect(() => {
         // Only run if a token is present but the user object is null
         if (token && !user) {

@@ -1,6 +1,5 @@
 import React from 'react';
 
-// Lightweight BaseModal using Tailwind for styling. Keeps API compatible with existing modals.
 const BaseModal = ({ open, onClose, title, children, actions = null, maxWidth = 'md' }) => {
   if (!open) return null;
 

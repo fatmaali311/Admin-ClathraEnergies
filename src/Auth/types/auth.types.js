@@ -1,4 +1,4 @@
-// Auth Feature Type Definitions for ClathraEnergies Admin Dashboard
+// Auth Feature Type Definitions 
 
 /**
  * Login form data structure
