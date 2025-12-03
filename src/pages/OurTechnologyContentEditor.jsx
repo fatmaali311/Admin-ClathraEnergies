@@ -9,10 +9,12 @@ import Button from '../components/ui/Button';
 import usePageForm from '../hooks/usePageForm';
 import OurHeroSectionEditor from '../components/pageEditors/our/OurHeroSectionEditor';
 import OurStepsSectionEditor from '../components/pageEditors/our/OurStepsSectionEditor';
+import GasSeparationSectionEditor from '../components/pageEditors/our/GasSeparationSectionEditor';
 
 const SECTIONS = [
     { id: 'hero-section', title: 'Hero Banner' },
     { id: 'steps-section', title: 'Cycle Steps' },
+    { id: 'gas-separation', title: 'Gas Separation' },
 ];
 
 const PRIMARY_COLOR = '#ADD0B3';
@@ -46,6 +48,8 @@ const OurTechnologyContentEditor = () => {
                 return <OurHeroSectionEditor {...props} />;
             case 'steps-section':
                 return <OurStepsSectionEditor {...props} />;
+            case 'gas-separation':
+                return <GasSeparationSectionEditor {...props} />;
             default:
                 return null;
         }

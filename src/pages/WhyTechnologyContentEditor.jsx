@@ -9,10 +9,12 @@ import Button from '../components/ui/Button';
 import usePageForm from '../hooks/usePageForm';
 import WhyHeroSectionEditor from '../components/pageEditors/why/WhyHeroSectionEditor';
 import WhyStepsSectionEditor from '../components/pageEditors/why/WhyStepsSectionEditor';
+import WhySolutionsSectionEditor from '../components/pageEditors/why/WhySolutionsSectionEditor';
 
 const SECTIONS = [
     { id: 'hero-section', title: 'Hero Banner' },
     { id: 'steps-section', title: 'Stats & Info Sections' },
+    { id: 'solutions-section', title: 'Solutions Cards' },
 ];
 
 const PRIMARY_COLOR = '#ADD0B3';
@@ -46,6 +48,8 @@ const WhyTechnologyContentEditor = () => {
                 return <WhyHeroSectionEditor {...props} />;
             case 'steps-section':
                 return <WhyStepsSectionEditor {...props} />;
+            case 'solutions-section':
+                return <WhySolutionsSectionEditor {...props} />;
             default:
                 return null;
         }

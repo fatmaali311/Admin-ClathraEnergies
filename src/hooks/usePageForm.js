@@ -61,14 +61,47 @@ const PAGE_SCHEMAS = {
             { id: 5, text: 'Valorization of bioCH₄ and bioCO₂' },
             { id: 6, text: 'Agent Recycling and Return to Farms' },
         ],
+        
+        // Gas separation section (3 cylinders) editable from admin
+        gas_separation: {
+            title: 'Cryogenic Gas Separation',
+            sub_title: 'Fractional distillation separating Methane, Carbon Dioxide & Hydrogen via controlled cooling.',
+            gases: [
+                { name: 'CH4', color: '#e14b2c' },
+                { name: 'CO2', color: '#f5a623' },
+                { name: 'H2', color: '#6bbf59' },
+            ],
+        },
+
+        
     },
     'why-technology': {
         hero_section: { title: '', sub_title: '' },
+        // Section title for solutions block
+        solutions_section_title: 'Our Innovative Solutions',
         // textual sections reflecting the frontend layout
         stats_section: { methane_text: '100-170 Nm3 methane / m3', brand_text: 'ClathraEnergiesTM' },
         temp_section: { left_label: 'ClathraEnergiesTM', left_temp: '-20°C', right_label: 'BML', right_temp: '-162°C' },
         safe_section: { title: 'Safe and Green Technology' },
         economics_section: { capex_text: '25 - 50 % CAPEX', opex_text: '18 - 25 % OPEX' },
+        // Solutions cards section editable from admin
+        solutions_section: [
+            {
+                title: 'CO₂ \\nSOLUTIONS',
+                cards: ['ClathraStore-CO₂™', 'ClathraMove-CO₂™'],
+                cardColors: ['#ed7d31', '#1f6d2d'],
+                // Background gradient (large card) defaults
+                bgFrom: '#e8f5f8',
+                bgTo: '#f1faef',
+            },
+            {
+                title: 'BIOMETHANE \\nSOLUTIONS',
+                cards: ['ClathraStore-BioCH₄™', 'ClathraMove-BioCH₄™'],
+                cardColors: ['#009edb', '#8d3195'],
+                bgFrom: '#f0f7fb',
+                bgTo: '#f8edfb',
+            },
+        ],
    
     },
 };
