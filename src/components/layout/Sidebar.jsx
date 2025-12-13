@@ -11,7 +11,10 @@ import {
   MdContacts,
   MdPeople,
   MdDashboard,
-  MdSettings
+  MdSettings,
+  MdHelp,
+
+
 } from 'react-icons/md';
 import Logo from '../Common/Logo';
 import { PRIMARY_COLOR, HOVER_COLOR } from '../Common/styles';
@@ -30,22 +33,22 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       ? `${activeBgColor} ${textColor} font-bold shadow-md`
       : 'text-white hover:bg-white hover:text-[#388E3C] opacity-95 hover:opacity-100'}
   `;
-  
+
 
   // Dashboard (independent)
   const dashboardItem = { name: 'Dashboard', path: '/', icon: <MdDashboard size={20} /> };
 
   // Content Management Links
   const contentNavItems = [
-  { name: 'Home', path: '/dashboard/content/home', icon: <MdHome size={20} /> },
+    { name: 'Home', path: '/dashboard/content/home', icon: <MdHome size={20} /> },
     { name: 'About Us', path: '/dashboard/content/about-us', icon: <MdInfo size={20} /> },
     { name: 'Services', path: '/dashboard/content/services', icon: <MdBuild size={20} /> },
     { name: 'Careers', path: '/dashboard/content/careers', icon: <MdWork size={20} /> },
-   { name: 'Our Technology', path: '/dashboard/content/our-technology', icon: <MdInfo size={20} /> },
-   { name: 'Why Technology', path: '/dashboard/content/why-technology', icon: <MdInfo size={20} /> },
+    { name: 'Our Technology', path: '/dashboard/content/our-technology', icon: <MdInfo size={20} /> },
+    { name: 'Why Technology', path: '/dashboard/content/why-technology', icon: <MdInfo size={20} /> },
+    { name: 'Biogas Solutions', path: '/dashboard/content/biogas-solutions', icon: <MdHelp size={20} /> },
     { name: 'Applications', path: '/dashboard/content/applications', icon: <MdApps size={20} /> },
     { name: 'Contact Us', path: '/dashboard/content/contact-us', icon: <MdContacts size={20} /> },
-  
     { name: 'Configuration', path: '/dashboard/configuration', icon: <MdSettings size={20} /> },
   ];
 

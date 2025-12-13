@@ -7,22 +7,20 @@ import Toast from '../components/ui/Toast';
 import SidebarNavigation from '../components/layout/SidebarNavigation';
 import Button from '../components/ui/Button';
 import usePageForm from '../hooks/usePageForm';
-import WhyHeroSectionEditor from '../components/pageEditors/why/WhyHeroSectionEditor';
-import WhyStepsSectionEditor from '../components/pageEditors/why/WhyStepsSectionEditor';
-
+import OurHeroSectionEditor from '../components/pageEditors/biogas/OurHeroSectionEditor';
+import OurStepsSectionEditor from '../components/pageEditors/our/OurStepsSectionEditor';
 
 const SECTIONS = [
     { id: 'hero-section', title: 'Hero Banner' },
-    { id: 'steps-section', title: 'Stats & Info Sections' },
-   
+    { id: 'steps-section', title: 'Cycle Steps' },
 ];
 
 const PRIMARY_COLOR = '#ADD0B3';
 
-const WhyTechnologyContentEditor = () => {
+const BiogasSolutionsContentEditor = () => {
     const { pageTitle } = useParams();
     const [activeSection, setActiveSection] = useState(SECTIONS[0].id);
-    const form = usePageForm(pageTitle);
+    const form = usePageForm(pageTitle || 'biogas-solutions');
     const {
         pageData,
         isLoading,
@@ -45,10 +43,9 @@ const WhyTechnologyContentEditor = () => {
         const props = { form, activeSection, PRIMARY_COLOR };
         switch (activeSection) {
             case 'hero-section':
-                return <WhyHeroSectionEditor {...props} />;
+                return <OurHeroSectionEditor {...props} />;
             case 'steps-section':
-                return <WhyStepsSectionEditor {...props} />;
-           
+                return <OurStepsSectionEditor {...props} />;
             default:
                 return null;
         }
@@ -58,7 +55,7 @@ const WhyTechnologyContentEditor = () => {
         return (
             <DashboardLayout>
                 <div className="flex justify-center items-center h-96 text-gray-500">
-                    <LoadingSpinner /> <span className="ml-2">Loading Why Technology Page Content...</span>
+                    <LoadingSpinner /> <span className="ml-2">Loading Biogas Solutions Page Content...</span>
                 </div>
             </DashboardLayout>
         );
@@ -71,7 +68,7 @@ const WhyTechnologyContentEditor = () => {
                     className="text-4xl font-extrabold text-gray-800 border-l-4 pl-4 mb-8"
                     style={{ borderLeftColor: PRIMARY_COLOR }}
                 >
-                    Why Technology Page Content Editor
+                    Biogas Solutions Page Content Editor
                 </h1>
                 <div className="mb-6 max-w-4xl mx-auto">
                     {toast.message && (
@@ -106,7 +103,7 @@ const WhyTechnologyContentEditor = () => {
                                     <LoadingSpinner color="white" /> Saving Changes...
                                 </>
                             ) : (
-                                'Save Why Technology Content'
+                                'Save Biogas Solutions Content'
                             )}
                         </Button>
                     </div>
@@ -121,4 +118,4 @@ const WhyTechnologyContentEditor = () => {
     );
 };
 
-export default WhyTechnologyContentEditor;
+export default BiogasSolutionsContentEditor;

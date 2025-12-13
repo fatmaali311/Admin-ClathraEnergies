@@ -53,19 +53,43 @@ const PAGE_SCHEMAS = {
     },
     'our-technology': {
         hero_section: { title: '', sub_title: '' },
-        steps: [
-            { id: 1, text: 'Biogas Pre-treatment at the Farm' },
-            { id: 2, text: 'Storing Biogas in compact solid form.' },
-            { id: 3, text: 'Transport of Solidified Biogas to Central Hub' },
-            { id: 4, text: 'Centralized Recovery and Purification' },
-            { id: 5, text: 'Valorization of bioCH₄ and bioCO₂' },
-            { id: 6, text: 'Agent Recycling and Return to Farms' },
+        solutions_section_title: 'Our Innovative Solutions',
+        solutions_section: [
+            {
+                title: 'CO₂ \\n+SOLUTIONS',
+                cards: ['ClathraStore-CO₂™', 'ClathraMove-CO₂™'],
+                cardColors: ['#ed7d31', '#1f6d2d'],
+                bgFrom: '#e8f5f8',
+                bgTo: '#f1faef',
+               link: '',
+            },
+            {
+                title: 'BIOMETHANE \\n+SOLUTIONS',
+                cards: ['ClathraStore-BioCH₄™', 'ClathraMove-BioCH₄™'],
+                cardColors: ['#009edb', '#8d3195'],
+                bgFrom: '#f0f7fb',
+                bgTo: '#f8edfb',
+               link: '',
+            },
         ],
+      
         
         // Gas separation section (3 cylinders) editable from admin
         gas_separation: {
             title: 'Cryogenic Gas Separation',
             sub_title: 'Fractional distillation separating Methane, Carbon Dioxide & Hydrogen via controlled cooling.',
+            // background image key (stored in images map as 'gas_bg_image')
+            bg_image: '',
+            // background overlay opacities (decimals 0.0 - 1.0)
+            // `bg_dark_opacity` controls the darkness (left side),
+            // `bg_light_opacity` controls the lightness (right side)
+            bg_dark_opacity: 0.5,
+            bg_light_opacity: 0.2,
+            // Learn more button for Gas Separation
+            button: {
+                title: 'Learn More',
+                link: '/why-technology',
+            },
             gases: [
                 { name: 'CH4', color: '#e14b2c' },
                 { name: 'CO2', color: '#f5a623' },
@@ -74,6 +98,17 @@ const PAGE_SCHEMAS = {
         },
 
         
+    },
+    'biogas-solutions': {
+        hero_section: { title: '', sub_title: '' },
+        steps: [
+            { id: 1, text: 'Biogas Pre-treatment at the Farm' },
+            { id: 2, text: 'Storing Biogas in compact solid form.' },
+            { id: 3, text: 'Transport of Solidified Biogas to Central Hub' },
+            { id: 4, text: 'Centralized Recovery and Purification' },
+            { id: 5, text: 'Valorization of bioCH₄ and bioCO₂' },
+            { id: 6, text: 'Agent Recycling and Return to Farms' },
+        ],
     },
     'why-technology': {
         hero_section: { title: '', sub_title: '' },
@@ -93,6 +128,7 @@ const PAGE_SCHEMAS = {
                 // Background gradient (large card) defaults
                 bgFrom: '#e8f5f8',
                 bgTo: '#f1faef',
+                    cardLinks: ['', ''],
             },
             {
                 title: 'BIOMETHANE \\nSOLUTIONS',
@@ -100,6 +136,7 @@ const PAGE_SCHEMAS = {
                 cardColors: ['#009edb', '#8d3195'],
                 bgFrom: '#f0f7fb',
                 bgTo: '#f8edfb',
+                   link: '',
             },
         ],
    
@@ -143,6 +180,17 @@ const usePageForm = (pageTitle) => {
                     if (partnerKeys.length > 0) {
                         updatedPageData.partners_section = partnerKeys.map(() => ({}));
                     }
+                }
+
+                // Backwards compatibility: if backend returned single `bg_opacity`, map it
+                if (updatedPageData.gas_separation) {
+                    const gs = updatedPageData.gas_separation;
+                    if (gs.bg_opacity !== undefined) {
+                        if (gs.bg_dark_opacity === undefined) gs.bg_dark_opacity = gs.bg_opacity;
+                        if (gs.bg_light_opacity === undefined) gs.bg_light_opacity = gs.bg_opacity;
+                    }
+                    // also map legacy learn_more to button if present
+                    if (!gs.button && gs.learn_more) gs.button = gs.learn_more;
                 }
 
                 setPageData(updatedPageData);
@@ -289,6 +337,16 @@ const usePageForm = (pageTitle) => {
                         if (partnerKeys.length > 0) {
                             updatedPageData.partners_section = partnerKeys.map(() => ({}));
                         }
+                    }
+
+                    // Backwards compatibility after save: map legacy single `bg_opacity` to new fields
+                    if (updatedPageData.gas_separation) {
+                        const gs = updatedPageData.gas_separation;
+                        if (gs.bg_opacity !== undefined) {
+                            if (gs.bg_dark_opacity === undefined) gs.bg_dark_opacity = gs.bg_opacity;
+                            if (gs.bg_light_opacity === undefined) gs.bg_light_opacity = gs.bg_opacity;
+                        }
+                        if (!gs.button && gs.learn_more) gs.button = gs.learn_more;
                     }
 
                     setPageData(updatedPageData);

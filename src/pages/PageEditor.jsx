@@ -12,6 +12,7 @@ import ServicesContentEditor from './ServicesContentEditor';
 import ApplicationManagementPage from './ApplicationManagementPage';
 import WhyTechnologyContentEditor from './WhyTechnologyContentEditor';
 import OurTechnologyContentEditor from './OurTechnologyContentEditor';
+import BiogasSolutionsContentEditor from './BiogasSolutionsContentEditor';
 
 const DefaultEditorFallback = ({ pageTitle, isLoading }) => {
     const formattedTitle = pageTitle.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
@@ -49,6 +50,8 @@ const PageEditor = () => {
             return <WhyTechnologyContentEditor />;
         case 'our-technology':
             return <OurTechnologyContentEditor />;
+        case 'biogas-solutions':
+            return <BiogasSolutionsContentEditor />;
         case 'contact-us':
             return <ContactUsContentEditor />;
         case 'services':

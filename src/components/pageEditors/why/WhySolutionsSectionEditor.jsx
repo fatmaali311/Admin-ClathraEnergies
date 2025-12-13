@@ -24,6 +24,10 @@ const WhySolutionsSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
         handleArrayItemChange('solutions_section', catIndex, 'cards', cards);
     };
 
+    const updateCategoryLink = (catIndex, value) => {
+        handleArrayItemChange('solutions_section', catIndex, 'link', value);
+    };
+
     const updateCardColor = (catIndex, colorIndex, value) => {
         const cardColors = Array.isArray(categories[catIndex]?.cardColors) ? [...categories[catIndex].cardColors] : [];
         cardColors[colorIndex] = value;
@@ -57,6 +61,7 @@ const WhySolutionsSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
             title: 'New Solutions Category',
             cards: ['New Card'],
             cardColors: ['#000000'],
+            link: '',
             bgFrom: '#e8f5f8',
             bgTo: '#f1faef',
         });
@@ -110,19 +115,32 @@ const WhySolutionsSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
                                                             onChange={(e) => updateCard(idx, cidx, e.target.value)}
                                                             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-lg"
                                                         />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => removeCard(idx, cidx)}
-                                                            className="px-3 py-2 rounded-lg bg-red-100 text-red-700 font-semibold"
-                                                        >
-                                                            Remove
-                                                        </button>
+                                                        <div className="flex flex-col w-56">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeCard(idx, cidx)}
+                                                                className="px-3 py-2 rounded-lg bg-red-100 text-red-700 font-semibold"
+                                                            >
+                                                                Remove
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 ))}
                                                 <div>
                                                     <Button onClick={() => addCard(idx)}>+ Add Card</Button>
                                                 </div>
                                             </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-md font-semibold text-gray-700 mb-2">Category Link (optional)</label>
+                                            <input
+                                                type="text"
+                                                value={cat.link || ''}
+                                                onChange={(e) => updateCategoryLink(idx, e.target.value)}
+                                                placeholder="/path-or-external-url"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-lg"
+                                            />
                                         </div>
 
                                         <div>

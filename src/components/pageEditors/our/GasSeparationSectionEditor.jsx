@@ -37,6 +37,79 @@ const GasSeparationSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
                 />
             </div>
 
+            {/* Background image + gradient opacity */}
+            <div className="mt-4">
+                <h4 className="text-md font-semibold text-gray-800 mb-2">Background Image (Arrow area)</h4>
+                <MediaUpload
+                    title="Background Image"
+                    name="gas_bg_image"
+                    fileState={newFiles?.gas_bg_image}
+                    url={getAdminImageUrl(imageUrls?.gas_bg_image)}
+                    handleFileChange={handleFileChange}
+                    accept="image/*"
+                />
+
+                <div className="mt-3 grid gap-4">
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Darkness Opacity</label>
+                        <div className="flex items-center space-x-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                            <input
+                                type="range"
+                                name="gas_separation.bg_dark_opacity"
+                                min="0"
+                                max="1"
+                                step="0.05"
+                                value={gasSection.bg_dark_opacity ?? 0.5}
+                                onChange={handleInputChange}
+                                className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
+                                style={{ accentColor: PRIMARY_COLOR }}
+                                title="Drag to change dark overlay opacity"
+                            />
+                            <input
+                                type="number"
+                                name="gas_separation.bg_dark_opacity"
+                                min="0"
+                                max="1"
+                                step="0.05"
+                                value={gasSection.bg_dark_opacity ?? 0.5}
+                                onChange={handleInputChange}
+                                className="w-20 px-2 py-1 border border-gray-300 rounded-lg text-center text-sm"
+                            />
+                        </div>
+                        <p className="mt-1 text-xs text-gray-500">0.0 (no darkness) to 1.0 (full dark overlay).</p>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Lightness Opacity</label>
+                        <div className="flex items-center space-x-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                            <input
+                                type="range"
+                                name="gas_separation.bg_light_opacity"
+                                min="0"
+                                max="1"
+                                step="0.05"
+                                value={gasSection.bg_light_opacity ?? 0.2}
+                                onChange={handleInputChange}
+                                className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
+                                style={{ accentColor: PRIMARY_COLOR }}
+                                title="Drag to change light overlay opacity"
+                            />
+                            <input
+                                type="number"
+                                name="gas_separation.bg_light_opacity"
+                                min="0"
+                                max="1"
+                                step="0.05"
+                                value={gasSection.bg_light_opacity ?? 0.2}
+                                onChange={handleInputChange}
+                                className="w-20 px-2 py-1 border border-gray-300 rounded-lg text-center text-sm"
+                            />
+                        </div>
+                        <p className="mt-1 text-xs text-gray-500">0.0 (no light) to 1.0 (full white overlay).</p>
+                    </div>
+                </div>
+            </div>
+
             {/* Floating Icons (fire, ice, leaf) - show right after subtitle */}
             <div className="mt-6 pt-2">
                 <h4 className="text-lg font-semibold mb-3">Floating Icons (Fire / Ice / Leaf)</h4>
@@ -79,6 +152,27 @@ const GasSeparationSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
                         />
                     </div>
                 </div>
+            </div>
+
+            {/* Learn More / Button settings (placed after floating icons) */}
+            <div className="mt-8">
+                <h4 className="text-md font-semibold mb-2">Button</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <InputGroup
+                        title="Button Title"
+                        name="gas_separation.button.title"
+                        value={(gasSection.button && gasSection.button.title) || ''}
+                        onChange={handleInputChange}
+                    />
+
+                    <InputGroup
+                        title="Button Link"
+                        name="gas_separation.button.link"
+                        value={(gasSection.button && gasSection.button.link) || ''}
+                        onChange={handleInputChange}
+                    />
+                </div>
+                <p className="text-xs text-gray-500 mt-2">If the link starts with '/', it will open in the same tab; otherwise it opens in a new tab.</p>
             </div>
 
             <p className="text-gray-600 mt-6 mb-4">Edit the three main gases (name, color, image).</p>
