@@ -2,6 +2,7 @@ import React from 'react';
 import InputGroup from '../../ui/InputGroup';
 import Button from '../../ui/Button';
 import Card from '../../ui/Card';
+import LocalizedInput from '../../ui/LocalizedInput';
 
 const WhySolutionsSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
     const {
@@ -41,7 +42,7 @@ const WhySolutionsSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
     const addCard = (catIndex) => {
         const cards = Array.isArray(categories[catIndex]?.cards) ? [...categories[catIndex].cards] : [];
         const cardColors = Array.isArray(categories[catIndex]?.cardColors) ? [...categories[catIndex].cardColors] : [];
-        cards.push('New Card');
+        cards.push({ en: 'New Card', fr: '', zh: '' });
         cardColors.push('#000000');
         handleArrayItemChange('solutions_section', catIndex, 'cards', cards);
         handleArrayItemChange('solutions_section', catIndex, 'cardColors', cardColors);
@@ -58,8 +59,8 @@ const WhySolutionsSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
 
     const addCategory = () => {
         handleAddItem('solutions_section', {
-            title: 'New Solutions Category',
-            cards: ['New Card'],
+            title: { en: 'New Solutions Category', fr: '', zh: '' },
+            cards: [{ en: 'New Card', fr: '', zh: '' }],
             cardColors: ['#000000'],
             link: '',
             bgFrom: '#e8f5f8',
@@ -79,10 +80,10 @@ const WhySolutionsSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
                 </h2>
 
                 <div className="w-full">
-                    <InputGroup
-                        title="Section Title"
+                    <LocalizedInput
+                        label="Section Title"
                         name="solutions_section_title"
-                        value={pageData?.solutions_section_title || 'Our Innovative Solutions'}
+                        value={pageData?.solutions_section_title}
                         onChange={(e) => handleInputChange(e)}
                     />
                 </div>
@@ -93,13 +94,13 @@ const WhySolutionsSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
 
                 <div className="space-y-6">
                     {categories.map((cat, idx) => (
-                        <Card key={idx} title={cat.title || 'Category'} color={PRIMARY_COLOR}>
+                        <Card key={idx} title={cat.title?.en || 'Category'} color={PRIMARY_COLOR}>
                             <div className="grid grid-cols-1 gap-6">
                                 <div className="space-y-4">
-                                    <InputGroup
-                                        title="Category Title"
+                                    <LocalizedInput
+                                        label="Category Title"
                                         name={`solutions_section[${idx}].title`}
-                                        value={cat.title || ''}
+                                        value={cat.title}
                                         onChange={(e) => updateTitle(idx, e.target.value)}
                                     />
 
@@ -109,25 +110,31 @@ const WhySolutionsSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
                                             <div className="space-y-2">
                                                 {(cat.cards || []).map((card, cidx) => (
                                                     <div key={cidx} className="flex items-center gap-3">
-                                                        <input
-                                                            type="text"
+                                                        <LocalizedInput
+                                                            label={`Card ${cidx + 1}`}
+                                                            name={`card_${cidx}`}
                                                             value={card}
                                                             onChange={(e) => updateCard(idx, cidx, e.target.value)}
-                                                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-lg"
                                                         />
-                                                        <div className="flex flex-col w-56">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => removeCard(idx, cidx)}
-                                                                className="px-3 py-2 rounded-lg bg-red-100 text-red-700 font-semibold"
-                                                            >
-                                                                Remove
-                                                            </button>
-                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeCard(idx, cidx)}
+                                                            className="px-3 py-1.5 rounded-lg bg-white text-red-500 hover:bg-red-50 transition-all duration-300 border border-red-100 text-sm shadow-sm"
+                                                            title="Remove Card"
+                                                        >
+                                                            ×
+                                                        </button>
                                                     </div>
                                                 ))}
                                                 <div>
-                                                    <Button onClick={() => addCard(idx)}>+ Add Card</Button>
+                                                    <div className="pt-2">
+                                                        <Button
+                                                            onClick={() => addCard(idx)}
+                                                            className="w-full bg-transparent border-2 border-dashed border-[#ADD0B3] text-[#ADD0B3] hover:bg-[#f0faf1] transition-all duration-300 py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2"
+                                                        >
+                                                            <span className="text-lg">+</span> Add Content Card
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -195,8 +202,14 @@ const WhySolutionsSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-3 mt-4">
-                                        <Button onClick={() => removeCategory(idx)} className="bg-red-500 hover:bg-red-600">Remove Category</Button>
+                                    <div className="flex items-center justify-end mt-6 pt-4 border-t border-gray-100">
+                                        <button
+                                            type="button"
+                                            onClick={() => removeCategory(idx)}
+                                            className="px-5 py-2 rounded-xl bg-white text-red-500 font-medium hover:bg-red-50 transition-all duration-300 border border-red-200 flex items-center gap-1.5 shadow-sm text-sm"
+                                        >
+                                            <span className="text-lg">×</span> Remove Solutions Category
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -204,8 +217,14 @@ const WhySolutionsSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
                     ))}
                 </div>
 
-                <div className="pt-4">
-                    <Button onClick={addCategory}>Add New Solutions Category</Button>
+                <div className="pt-6">
+                    <Button
+                        onClick={addCategory}
+                        className="w-full py-3 text-white font-semibold text-lg rounded-2xl shadow-lg hover:brightness-105 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-3"
+                        style={{ background: `linear-gradient(135deg, ${PRIMARY_COLOR}, #8CB190)` }}
+                    >
+                        <span className="text-2xl">+</span> Add New Solutions Category
+                    </Button>
                 </div>
             </div>
         </section>

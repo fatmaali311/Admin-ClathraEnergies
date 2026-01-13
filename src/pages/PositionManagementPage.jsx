@@ -1,34 +1,34 @@
 import React, { useState } from "react";
-import DashboardLayout from '../layout/DashboardLayout'; 
-import Toast from '../components/ui/Toast'; 
+import DashboardLayout from '../layout/DashboardLayout';
+import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
 import { usePositions } from "../hooks/usePositions";
-import { useToast } from "../hooks/useToast"; 
 import PositionTable from "../components/position/PositionTable";
 import PositionFormModal from "../components/position/PositionFormModal";
 import PositionDetailsModal from "../components/position/PositionDetailsModal";
 import { ConfirmDialog } from "../components/Common/ConfirmDialog";
 import { deletePosition } from "../services/positionService";
-import { Pagination, Box, Typography } from "@mui/material";
+import { Pagination, Box } from "@mui/material";
+import { getLocalizedValue } from "../lib/apiUtils";
 
 const PRIMARY_COLOR = "#ADD0B3";
 
 export default function PositionManagementPage() {
-  const { token, loading: authLoading } = useAuth();
-  const { toast, showToast, closeToast } = useToast(); 
+  const { loading: authLoading } = useAuth();
+  // const { toastLegacy, showToastLegacy, closeToastLegacy } = useToast(); // Removed legacy toast hook
 
-  const [page, setPage] = useState(1);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingPosition, setEditingPosition] = useState(null);
   const [viewingPosition, setViewingPosition] = useState(null);
-  
+
   // Delete state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [positionToDelete, setPositionToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const { positions, loading, totalPages, totalPositions, refetchPositions } =
-    usePositions(token, page, 10);
+  // Use autonomous pagination
+  const { resource, refetchPositions, positions, totalPositions } = usePositions();
+  const { loading } = resource;
 
   // --- Delete Handlers (using Modal) ---
 
@@ -36,17 +36,17 @@ export default function PositionManagementPage() {
     setPositionToDelete(position);
     setDeleteConfirmOpen(true);
   };
-  
+
   const handleConfirmDelete = async () => {
     if (!positionToDelete) return;
 
     setIsDeleting(true);
     try {
-      await deletePosition(token, positionToDelete._id);
-      showToast('Position deleted successfully!', 'success'); // SUCCESS TOAST
+      await deletePosition(positionToDelete._id);
+      toast.success('Position deleted successfully!');
       refetchPositions();
     } catch (error) {
-      showToast(`Failed to delete position: ${error.message}`, 'error'); // ERROR TOAST
+      toast.error(`Failed to delete position: ${error.message}`);
     } finally {
       setIsDeleting(false);
       setDeleteConfirmOpen(false);
@@ -60,26 +60,22 @@ export default function PositionManagementPage() {
     setEditingPosition(position);
     setIsFormModalOpen(true);
   };
-  
+
   const handleView = (position) => {
     setViewingPosition(position);
   };
-  
+
   const handleCloseFormModal = (needsRefresh = false) => {
     setIsFormModalOpen(false);
     setEditingPosition(null);
     if (needsRefresh) {
       refetchPositions();
-      showToast('Position saved successfully!', 'success'); // SUCCESS TOAST
+      toast.success('Position saved successfully!');
     }
   };
 
   if (authLoading) {
     return <div className="flex justify-center py-10 text-xl text-gray-700">🔄 Checking session...</div>;
-  }
-
-  if (!token) {
-    return <div className="text-center py-10 text-red-500 font-semibold">🚫 Unauthorized. Please login.</div>;
   }
 
   return (
@@ -100,67 +96,40 @@ export default function PositionManagementPage() {
 
         {/* --- Position Table --- */}
         <PositionTable
-          positions={positions}
-          loading={loading}
+          resource={resource}
           onView={handleView}
           onEdit={handleEdit}
           onDelete={handleDeleteClick} // Use the modal handler
-          onRefresh={refetchPositions}
         />
 
-        {/* --- Pagination --- */}
-        {!loading && totalPages > 0 && (
-          <Box display="flex" justifyContent="center" mt={4}>
-            <Pagination
-              count={totalPages}
-              page={page}
-              onChange={(e, value) => setPage(value)}
-              color="primary"
-              disabled={loading}
-              sx={{
-                "& .MuiPaginationItem-root": {
-                  "&.Mui-selected": {
-                    backgroundColor: PRIMARY_COLOR,
-                    color: "white",
-                    "&:hover": { backgroundColor: '#8CB190' },
-                  },
-                },
-              }}
-            />
-          </Box>
-        )}
+        {/* --- Pagination Removed (Handled by ResourceTable) --- */}
       </div>
 
       {/* --- Modals and Toast --- */}
-      <PositionFormModal 
+      <PositionFormModal
         open={isFormModalOpen}
         onClose={handleCloseFormModal}
-        position={editingPosition} 
-        token={token}
+        position={editingPosition}
+      // token removed
       />
-      
+
       <PositionDetailsModal
         open={!!viewingPosition}
         onClose={() => setViewingPosition(null)}
         position={viewingPosition}
-      /> 
+      />
 
       <ConfirmDialog
         open={deleteConfirmOpen}
         onClose={(v) => setDeleteConfirmOpen(!!v)}
         onConfirm={handleConfirmDelete}
         title={`Confirm Deletion`}
-        message={`Are you sure you want to delete the Position: ${positionToDelete?.name || ''}?`}
+        message={`Are you sure you want to delete the Position: ${getLocalizedValue(positionToDelete?.name) || ''}?`}
         confirmLabel={`Delete Position`}
         cancelLabel={`Cancel`}
         loading={isDeleting}
       />
-      
-      <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={closeToast}
-      />
+
     </DashboardLayout>
   );
 }

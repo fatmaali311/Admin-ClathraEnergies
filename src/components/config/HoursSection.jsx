@@ -1,6 +1,7 @@
 import React from 'react';
 import Card from '../ui/Card';
 import TimeInput from '../ui/TimeInput';
+import LocalizedInput from '../ui/LocalizedInput';
 
 const HoursSection = ({ config, handleArrayAction, handleChange, PRIMARY_COLOR }) => {
   const handleUpdate = (index, field, value) => {
@@ -11,14 +12,11 @@ const HoursSection = ({ config, handleArrayAction, handleChange, PRIMARY_COLOR }
     <Card title="Working Hours & Schedule" color={PRIMARY_COLOR}>
       <div className="space-y-6">
         <div className="mb-4">
-          <label className="text-sm font-medium text-gray-600 mb-2 block">Working Hours Title</label>
-          <input
-            type="text"
+          <LocalizedInput
+            label="Working Hours Title"
             name="working_title"
-            value={config?.working_title || ''}
+            value={config?.working_title}
             onChange={handleChange}
-            placeholder="Enter working hours section title"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-base"
           />
         </div>
         {(config?.workingHours || []).map((hourBlock, index) => (

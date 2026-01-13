@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useContacts } from "../hooks/useContacts";
 import ContactTable from "../components/contact/ContactTable";
-import { 
-  Pagination, Box, Typography,
+import {
+  Pagination, Box,
   ToggleButtonGroup, ToggleButton
 } from "@mui/material";
 
@@ -12,13 +12,13 @@ const PRIMARY_COLOR = "#ADD0B3";
 const HOVER_COLOR = "#8CB190";
 
 export default function ContactUsPage() {
-  const { token, loading: authLoading } = useAuth(); 
+  const { user, loading: authLoading } = useAuth();
   const [page, setPage] = useState(1);
   // New state for the read/unread/all filter
   const [readFilter, setReadFilter] = useState('all'); // 'all', 'read', or 'unread'
 
-  const { contacts, loading, totalPages, totalContacts, refetchContacts } = 
-    useContacts(token, page, 10, readFilter); // Pass readFilter
+  const { contacts, loading, totalPages, totalContacts, refetchContacts } =
+    useContacts(page, 10, readFilter); // Pass readFilter
 
   const handleFilterChange = (event, newFilter) => {
     if (newFilter !== null) { // MUI ToggleButton behavior
@@ -35,13 +35,8 @@ export default function ContactUsPage() {
     );
   }
 
-  if (!token) {
-    return (
-      <div className="text-center py-10 text-red-500 font-semibold">
-        🚫 Unauthorized. Please login.
-      </div>
-    );
-  }
+  // Basic auth check handled by Layout/Router usually, but if needed:
+  // if (!user) ... return login message
 
   return (
     <div className="max-w-7xl mx-auto py-8 text-left">
@@ -78,16 +73,16 @@ export default function ContactUsPage() {
           </ToggleButton>
         </ToggleButtonGroup>
       </Box>
-      
+
       {/* --- Contact Table (Pass refetchContacts) --- */}
-      <ContactTable 
-        contacts={contacts} 
-        loading={loading} 
+      <ContactTable
+        contacts={contacts}
+        loading={loading}
         refetchContacts={refetchContacts} // Pass the function down
       />
 
       {/* --- Pagination --- */}
-      {!loading && totalPages > 0 && ( 
+      {!loading && totalPages > 0 && (
         <Box display="flex" justifyContent="center" mt={4}>
           <Pagination
             count={totalPages}

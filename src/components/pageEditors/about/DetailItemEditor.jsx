@@ -1,6 +1,8 @@
 import React from 'react';
 import InputGroup from '../../ui/InputGroup';
 import MediaUpload from '../../ui/MediaUpload';
+import LocalizedInput from '../../ui/LocalizedInput';
+import LocalizedTextArea from '../../ui/LocalizedTextArea';
 import { getAdminImageUrl } from '../../../lib/mediaUtils';
 import Button from '../../ui/Button';
 
@@ -15,9 +17,9 @@ const DetailItemEditor = ({
     onFileChange,
     onRemove
 }) => {
-        const handleInput = (e) => {
-  onChange(basePath, index, e.target.name.split('.').pop(), e.target.value);
-};
+    const handleInput = (e) => {
+        onChange(basePath, index, e.target.name.split('.').pop(), e.target.value);
+    };
 
 
     return (
@@ -37,26 +39,21 @@ const DetailItemEditor = ({
             )}
 
             {/* Title */}
-            <InputGroup
-                title="Title"
+            <LocalizedInput
+                label="Title"
                 name="title"
-                value={item.title || ''}
+                value={item.title}
                 onChange={handleInput}
             />
 
             {/* Subtitle */}
-            <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    Description / Subtitle
-                </label>
-                <textarea
-                    name="sub_title"
-                    value={item.sub_title || ''}
-                    onChange={handleInput}
-                    rows="3"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-[#ADD0B3] focus:border-[#ADD0B3] text-base"
-                />
-            </div>
+            <LocalizedTextArea
+                label="Description / Subtitle"
+                name="sub_title"
+                value={item.sub_title}
+                onChange={handleInput}
+                rows={3}
+            />
 
             {/* Color Picker + Text Input */}
             <div>
@@ -84,13 +81,15 @@ const DetailItemEditor = ({
 
             {/* Remove Button */}
             {onRemove && (
-                <Button
-                    type="button"
-                    onClick={() => onRemove(basePath, index)}
-                    className="bg-red-500 hover:bg-red-600 focus:ring-red-400 w-full"
-                >
-                    Remove Item
-                </Button>
+                <div className="flex justify-end pt-3 border-t border-gray-100 mt-4">
+                    <button
+                        type="button"
+                        onClick={() => onRemove(basePath, index)}
+                        className="px-4 py-1.5 rounded-lg bg-white text-red-500 font-medium hover:bg-red-50 transition-all duration-300 border border-red-200 flex items-center gap-1.5 text-sm"
+                    >
+                        <span>×</span> Remove Item
+                    </button>
+                </div>
             )}
         </div>
     );

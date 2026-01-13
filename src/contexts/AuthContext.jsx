@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { logoutRequest, fetchUserProfile } from '../Auth/services/authService';
+import { updateProfile } from '../Auth/services/userService';
+
 const AuthContext = createContext();
 
 // Create the initial auth state
@@ -44,9 +46,28 @@ export function AuthProvider({ children }) {
         // Force remove specific items just in case
         localStorage.removeItem('token');
         sessionStorage.removeItem('token');
-        
+
         // Force a complete page refresh
         window.location.replace('/login');
+    }, []);
+
+    const signOut = logout;
+
+    const refreshUser = useCallback(async () => {
+        const res = await fetchUserProfile();
+        if (res.ok) {
+            setUser(res.data.user || res.data);
+            return { ok: true };
+        }
+        return res;
+    }, []);
+
+    const saveProfile = useCallback(async (payload) => {
+        const res = await updateProfile(payload);
+        if (res.ok) {
+            setUser(res.data.user || res.data);
+        }
+        return res;
     }, []);
 
 
@@ -81,7 +102,7 @@ export function AuthProvider({ children }) {
     }, [token, user, logout]);
 
     return (
-        <AuthContext.Provider value={{ token, user, login, logout, loading }}>
+        <AuthContext.Provider value={{ token, user, login, logout, signOut, loading, refreshUser, saveProfile }}>
             {children}
         </AuthContext.Provider>
     );

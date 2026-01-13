@@ -1,10 +1,11 @@
 import React from 'react';
 import Card from '../../ui/Card';
-import InputGroup from '../../ui/InputGroup';
 import MediaUpload from '../../ui/MediaUpload';
 import { getAdminImageUrl } from '../../../lib/mediaUtils';
 import Button from '../../ui/Button';
 import LinkEditor from '../LinkEditor';
+import LocalizedInput from '../../ui/LocalizedInput';
+import LocalizedTextArea from '../../ui/LocalizedTextArea';
 
 const HeroSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
     const {
@@ -35,17 +36,17 @@ const HeroSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
                 handleFileChange={handleFileChange}
                 accept="image/*"
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                <InputGroup
-                    title="Hero Title"
+            <div className="space-y-6 mt-6">
+                <LocalizedInput
+                    label="Hero Title"
                     name="hero_section.title"
-                    value={pageData.hero_section?.title || ''}
+                    value={pageData.hero_section?.title}
                     onChange={handleInputChange}
                 />
-                <InputGroup
-                    title="Hero Subtitle/Small Text"
+                <LocalizedTextArea
+                    label="Hero Subtitle/Small Text"
                     name="hero_section.sub_title"
-                    value={pageData.hero_section?.sub_title || ''}
+                    value={pageData.hero_section?.sub_title}
                     onChange={handleInputChange}
                 />
             </div>
@@ -67,7 +68,7 @@ const HeroSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
             </div>
             <Button
                 type="button"
-                onClick={() => handleAddItem('hero_section.buttons', { name: 'New Button', link: '/' })}
+                onClick={() => handleAddItem('hero_section.buttons', { name: { en: 'New Button', fr: '', zh: '' }, link: '/' })}
                 className="mt-6 bg-[#ADD0B3] hover:bg-[#388E3C] focus:ring-[#388E3C] w-full"
             >
                 + Add New Button

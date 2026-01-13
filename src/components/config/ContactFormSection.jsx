@@ -1,17 +1,17 @@
 import React from 'react';
-import Card from '../ui/Card'; 
-import InputGroup from '../ui/InputGroup'; 
+import Card from '../ui/Card';
+import InputGroup from '../ui/InputGroup';
+import LocalizedInput from '../ui/LocalizedInput';
 
 const ContactFormSection = ({ config, handleChange }) => {
     return (
         <Card title="Contact Information">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Contact Name/Title */}
-                <InputGroup
-                    title="Contact Name/Title"
-                    type="text"
+                <LocalizedInput
+                    label="Contact Name/Title"
                     name="contactInfo.name"
-                    value={config?.contactInfo?.name || ''}
+                    value={config?.contactInfo?.name}
                     onChange={handleChange}
                 />
 

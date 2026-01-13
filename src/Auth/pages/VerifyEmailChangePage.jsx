@@ -1,20 +1,20 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 import { verifyEmailChange } from '../services/userService';
-import { useToast } from '../../hooks/useToast';
 
 export default function VerifyEmailChangePage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const { showToast } = useToast();
+  // const { showToastLegacy } = useToast(); // Removed legacy toast hook
 
   useEffect(() => {
     const verify = async () => {
       if (!token) {
-        showToast('Invalid verification link', 'error');
+        toast.error('Invalid verification link');
         return navigate('/login');
       }
 
@@ -26,9 +26,8 @@ export default function VerifyEmailChangePage() {
         if (response.ok && response.data?.user) {
           const newEmail = response.data.user.email;
 
-          showToast(
-            `✅ Email verified successfully! You can now log in with your new email address (${newEmail}).`,
-            'success'
+          toast.success(
+            `✅ Email verified successfully! You can now log in with your new email address (${newEmail}).`
           );
 
           // Force logout & clear everything to remove old JWT
@@ -42,21 +41,20 @@ export default function VerifyEmailChangePage() {
           // Redirect to login
           navigate('/login', { replace: true });
         } else {
-          showToast(response.error?.message || 'Failed to verify email', 'error');
+          toast.error(response.error?.message || 'Failed to verify email');
           navigate('/dashboard');
         }
       } catch (err) {
         console.error('Verify email change error:', err);
-        showToast(
-          err.response?.data?.message || 'Server error during verification',
-          'error'
+        toast.error(
+          err.response?.data?.message || 'Server error during verification'
         );
         navigate('/dashboard');
       }
     };
 
     verify();
-  }, [token, logout, navigate, showToast]);
+  }, [token, logout, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">

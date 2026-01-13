@@ -1,40 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Dialog, DialogTitle, DialogContent, DialogActions, 
-  Button, TextField, Typography, Box, IconButton, 
-  Stepper, Step, StepLabel, LinearProgress, Paper, 
-  Chip, Grid 
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  Button, TextField, Typography, Box, IconButton,
+  Stepper, Step, StepLabel, LinearProgress, Paper,
+  Chip, Grid
 } from '@mui/material';
-import { 
-  Close as CloseIcon, 
-  ChevronLeft, ChevronRight, 
+import {
+  Close as CloseIcon,
+  ChevronLeft, ChevronRight,
   AddCircleOutline, DeleteOutline,
   Add as AddIcon,
   Remove as RemoveIcon
 } from '@mui/icons-material';
 import { useServices } from '../../hooks/useServices';
-import { useToast } from '../../hooks/useToast';
+import { toast } from 'react-toastify';
 import { toServiceFormData } from '../../services/servicesApi';
 import { getAdminImageUrl } from '../../lib/mediaUtils';
+import LocalizedInput from '../ui/LocalizedInput';
+import LocalizedTextArea from '../ui/LocalizedTextArea';
 
 // --- Constants ---
 const PRIMARY_COLOR = "#ADD0B3";
 const HOVER_COLOR = "#8CB190";
 
 const initialServiceState = {
-  title: '',
+  title: { en: '', fr: '', zh: '' },
   data: {
     serviceObj: {
       main_color: '#ADD0B3',
-      sub_title: '',
-      paragraph: '',
-      details: [{ 
-        title: '', 
-        icon: '', 
-        points: { point1: '', point2: '', point3: '' } 
+      sub_title: { en: '', fr: '', zh: '' },
+      paragraph: { en: '', fr: '', zh: '' },
+      details: [{
+        title: { en: '', fr: '', zh: '' },
+        icon: '',
+        points: { point1: { en: '', fr: '', zh: '' }, point2: { en: '', fr: '', zh: '' }, point3: { en: '', fr: '', zh: '' } }
       }],
-      main_button: { name: 'Learn More', link: '/services' },
-      home_button: { name: 'Explore Now', link: '/home' },
+      main_button: { name: { en: 'Learn More', fr: '', zh: '' }, link: '/services' },
+      home_button: { name: { en: 'Explore Now', fr: '', zh: '' }, link: '/home' },
     },
     images: {},
   },
@@ -45,6 +47,9 @@ const STEPS = ['Basic Info', 'Details & Content', 'Media & Actions'];
 // Ensure any incoming service object has the expected nested shape so
 // components can safely read `data`, `data.serviceObj` and `data.images`.
 function normalizeService(svc) {
+  // Helper to ensure localized object
+  const ensureLocalized = (val) => (typeof val === 'string' ? { en: val, fr: '', zh: '' } : { en: '', fr: '', zh: '', ...val });
+
   // deep clone base shape
   const base = JSON.parse(JSON.stringify(initialServiceState));
   if (!svc) return base;
@@ -52,23 +57,40 @@ function normalizeService(svc) {
   // shallow merge then ensure nested fields exist
   const merged = { ...base, ...svc };
   merged.data = merged.data || JSON.parse(JSON.stringify(initialServiceState.data));
-  merged.data.serviceObj = merged.data.serviceObj || JSON.parse(JSON.stringify(initialServiceState.data.serviceObj));
-  
+  const sObj = merged.data.serviceObj = merged.data.serviceObj || JSON.parse(JSON.stringify(initialServiceState.data.serviceObj));
+
+  // Normalize localized fields
+  sObj.sub_title = ensureLocalized(sObj.sub_title);
+  sObj.paragraph = ensureLocalized(sObj.paragraph);
+  sObj.main_button.name = ensureLocalized(sObj.main_button.name);
+  if (sObj.home_button) sObj.home_button.name = ensureLocalized(sObj.home_button.name);
+
+  // Normalize details
+  if (Array.isArray(sObj.details)) {
+    sObj.details = sObj.details.map(d => ({
+      ...d,
+      title: ensureLocalized(d.title),
+      points: Object.keys(d.points || {}).reduce((acc, key) => {
+        acc[key] = ensureLocalized(d.points[key]);
+        return acc;
+      }, {})
+    }));
+  }
+
   // IMPORTANT: Preserve existing images from backend (URLs) so they display in edit mode
   merged.data.images = {
     ...(svc?.data?.images || {}),  // Keep existing backend URLs
     ...(merged.data.images || {}), // Allow overrides
   };
-  
+
   // ensure title exists
-  merged.title = merged.title || '';
+  merged.title = ensureLocalized(merged.title);
   return merged;
 }
 
 export default function ServiceForm({ service, onClose }) {
   const isEdit = !!service;
   const { saveService, loading: saving, error: saveError, setError: setHookError } = useServices();
-  const { showToast } = useToast();
 
   const [formData, setFormData] = useState(() => normalizeService(service));
   const [files, setFiles] = useState({});
@@ -84,23 +106,25 @@ export default function ServiceForm({ service, onClose }) {
   const handleBack = () => setActiveStep((prev) => prev - 1);
 
   const handleTextChange = (e, path, index, subKey) => {
+    // LocalizedInput returns { target: { name, value: {en, fr, zh} } }
+    // Standard inputs return { target: { name, value: string } }
     const value = e.target.value;
-    
+
     if (path === 'title') {
       setFormData(prev => ({ ...prev, title: value }));
       return;
     }
-    
+
     setFormData(prev => {
       let newState = JSON.parse(JSON.stringify(prev));
       const obj = newState.data.serviceObj;
 
       if (path === 'details') {
         if (subKey === 'point') {
-          const pointNum = e.target.name.match(/point(\d+)/)?.[1];
-          if (pointNum) {
-            obj.details[index].points[`point${pointNum}`] = value;
-          }
+          // For points, e.target.name is something like 'point1'
+          // The value coming from LocalizedInput is the full object
+          const pointKey = e.target.name;
+          obj.details[index].points[pointKey] = value;
         } else {
           obj.details[index][subKey] = value;
         }
@@ -118,7 +142,7 @@ export default function ServiceForm({ service, onClose }) {
     if (e.target.files.length) {
       const file = e.target.files[0];
       setFiles(prev => ({ ...prev, [fileKey]: file }));
-      
+
       setFormData(prev => {
         const newState = JSON.parse(JSON.stringify(prev));
         newState.data.images[fileKey] = URL.createObjectURL(file);
@@ -130,10 +154,10 @@ export default function ServiceForm({ service, onClose }) {
   const handleAddDetail = () => {
     setFormData(prev => {
       const newState = JSON.parse(JSON.stringify(prev));
-      newState.data.serviceObj.details.push({ 
-        title: '', 
+      newState.data.serviceObj.details.push({
+        title: { en: '', fr: '', zh: '' },
         icon: '',
-        points: { point1: '', point2: '', point3: '' } 
+        points: { point1: { en: '', fr: '', zh: '' }, point2: { en: '', fr: '', zh: '' }, point3: { en: '', fr: '', zh: '' } }
       });
       return newState;
     });
@@ -154,7 +178,7 @@ export default function ServiceForm({ service, onClose }) {
       const points = newState.data.serviceObj.details[detailIndex].points;
       const nextPointNum = Object.keys(points).length + 1;
       if (nextPointNum <= 10) { // Limit to 10 points max
-        points[`point${nextPointNum}`] = '';
+        points[`point${nextPointNum}`] = { en: '', fr: '', zh: '' };
       }
       return newState;
     });
@@ -170,14 +194,14 @@ export default function ServiceForm({ service, onClose }) {
 
   const validateStep = () => {
     setLocalError('');
-    if (activeStep === 0 && !formData.title.trim()) {
-      setLocalError('Service Title is required.');
+    if (activeStep === 0 && !formData.title?.en?.trim()) {
+      setLocalError('Service Title (English) is required.');
       return false;
     }
     if (activeStep === 1) {
-      const hasValidDetails = (formData?.data?.serviceObj?.details || []).every(detail => 
-          detail.title?.trim() && Object.values(detail.points || {}).some(p => p?.trim())
-        );
+      const hasValidDetails = (formData?.data?.serviceObj?.details || []).every(detail =>
+        detail.title?.en?.trim() && Object.values(detail.points || {}).some(p => p?.en?.trim())
+      );
       if (!hasValidDetails) {
         setLocalError('All detail sections must have a title and at least one point with content.');
         return false;
@@ -188,12 +212,12 @@ export default function ServiceForm({ service, onClose }) {
 
   const handleSubmit = async () => {
     if (!validateStep()) return;
-    
+
     setLocalError('');
     setHookError('');
 
     try {
-  const serviceObj = formData?.data?.serviceObj || initialServiceState.data.serviceObj;
+      const serviceObj = formData?.data?.serviceObj || initialServiceState.data.serviceObj;
       const finalServiceJson = {
         title: formData.title,
         ...serviceObj,
@@ -201,33 +225,32 @@ export default function ServiceForm({ service, onClose }) {
 
       const payload = toServiceFormData(finalServiceJson, files);
       await saveService(payload);
-      showToast(isEdit ? 'Service updated successfully' : 'Service created successfully', 'success');
+      toast.success(isEdit ? 'Service updated successfully' : 'Service created successfully');
       onClose();
     } catch (err) {
       const msg = err?.message || 'Error submitting service. Please try again.';
       setLocalError(msg);
-      showToast(msg, 'error');
+      toast.error(msg);
     }
   };
 
   const renderStepContent = (step) => {
-  const obj = formData?.data?.serviceObj || initialServiceState.data.serviceObj;
+    const obj = formData?.data?.serviceObj || initialServiceState.data.serviceObj;
 
     switch (step) {
       case 0:
         return (
           <Grid container spacing={3}>
             <Grid sx={{ width: '100%' }}>
-              <TextField
-                label="Service Title (Used as unique identifier/slug)"
+              <LocalizedInput
+                label="Service Title (En used as unique identifier/slug)"
                 name="title"
-                fullWidth
                 required
                 value={formData.title}
                 onChange={(e) => handleTextChange(e, 'title')}
                 disabled={isEdit}
                 helperText={isEdit ? 'Title cannot be changed. It is the unique identifier.' : 'Example: web-development'}
-                sx={{ mb: 2 }}
+                className="mb-2"
               />
             </Grid>
             <Grid sx={{ width: { xs: '100%', sm: '50%' }, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -250,25 +273,21 @@ export default function ServiceForm({ service, onClose }) {
               />
             </Grid>
             <Grid sx={{ width: { xs: '100%', sm: '50%' } }}>
-              <TextField
+              <LocalizedInput
                 label="Sub Title"
                 name="sub_title"
-                fullWidth
                 value={obj.sub_title}
                 onChange={(e) => handleTextChange(e, 'sub_title')}
-                sx={{ mb: 2 }}
+                className="mb-0"
               />
             </Grid>
             <Grid sx={{ width: '100%' }}>
-              <TextField
+              <LocalizedTextArea
                 label="Main Paragraph"
                 name="paragraph"
-                fullWidth
-                multiline
-                rows={4}
                 value={obj.paragraph}
                 onChange={(e) => handleTextChange(e, 'paragraph')}
-                sx={{ mb: 2 }}
+                rows={4}
               />
             </Grid>
           </Grid>
@@ -283,7 +302,7 @@ export default function ServiceForm({ service, onClose }) {
               const serviceTitle = formData.title || 'service';
               const iconFileKey = `${serviceTitle}-details-icon-${index + 1}`;
               const iconPreview = formData?.data?.images?.[iconFileKey];
-              
+
               return (
                 <Paper key={index} elevation={2} sx={{ p: 4, borderRadius: '12px' }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -291,8 +310,8 @@ export default function ServiceForm({ service, onClose }) {
                       Detail Section #{index + 1}
                     </Typography>
                     {obj.details.length > 1 && (
-                      <IconButton 
-                        onClick={() => handleDeleteDetail(index)} 
+                      <IconButton
+                        onClick={() => handleDeleteDetail(index)}
                         color="error"
                         aria-label="Delete detail section"
                       >
@@ -300,16 +319,15 @@ export default function ServiceForm({ service, onClose }) {
                       </IconButton>
                     )}
                   </Box>
-                  
-                  <TextField
+
+                  <LocalizedInput
                     label="Detail Title (e.g., 'Frontend Development')"
-                    fullWidth
                     required
                     value={detail.title}
                     onChange={(e) => handleTextChange(e, 'details', index, 'title')}
-                    sx={{ mb: 3 }}
+                    className="mb-6"
                   />
-                  
+
                   <Typography variant="subtitle2" sx={{ mb: 1, color: 'gray.600', fontWeight: 'medium' }}>
                     Icon Image (upload):
                   </Typography>
@@ -336,9 +354,9 @@ export default function ServiceForm({ service, onClose }) {
                     </label>
                     {iconPreview && (
                       <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <img 
-                          src={iconPreview.startsWith('blob:') || iconPreview.startsWith('http') ? iconPreview : getAdminImageUrl(iconPreview)} 
-                          alt="Icon Preview" 
+                        <img
+                          src={iconPreview.startsWith('blob:') || iconPreview.startsWith('http') ? iconPreview : getAdminImageUrl(iconPreview)}
+                          alt="Icon Preview"
                           style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
                         />
                         <Chip label="Icon Loaded" color="success" size="small" />
@@ -353,13 +371,12 @@ export default function ServiceForm({ service, onClose }) {
                   <Box sx={{ mb: 3 }}>
                     {Object.entries(detail.points).map(([pointKey, pointValue]) => (
                       <Box key={pointKey} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                        <TextField
+                        <LocalizedInput
                           label={`Point ${pointKey.replace('point', '')}`}
                           name={pointKey}
-                          fullWidth
-                          size="small"
                           value={pointValue}
                           onChange={(e) => handleTextChange(e, 'details', index, 'point')}
+                          className="flex-1 mb-0"
                         />
                         <IconButton
                           color="error"
@@ -410,11 +427,11 @@ export default function ServiceForm({ service, onClose }) {
                   onChange={(e) => handleFileChange(e, 'service-image')}
                 />
                 <label htmlFor="service-image-upload">
-                  <Button 
-                    variant="contained" 
-                    component="span" 
-                    sx={{ 
-                      backgroundColor: PRIMARY_COLOR, 
+                  <Button
+                    variant="contained"
+                    component="span"
+                    sx={{
+                      backgroundColor: PRIMARY_COLOR,
                       "&:hover": { backgroundColor: HOVER_COLOR },
                       px: 3,
                       py: 1.5,
@@ -426,9 +443,9 @@ export default function ServiceForm({ service, onClose }) {
                 {formData?.data?.images?.['service-image'] && (
                   <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Chip label="Main Image Loaded" color="success" size="small" />
-                    <img 
-                      src={formData?.data?.images?.['service-image'].startsWith('blob:') || formData?.data?.images?.['service-image'].startsWith('http') ? formData?.data?.images?.['service-image'] : getAdminImageUrl(formData?.data?.images?.['service-image'])} 
-                      alt="Service Preview" 
+                    <img
+                      src={formData?.data?.images?.['service-image'].startsWith('blob:') || formData?.data?.images?.['service-image'].startsWith('http') ? formData?.data?.images?.['service-image'] : getAdminImageUrl(formData?.data?.images?.['service-image'])}
+                      alt="Service Preview"
                       style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
                     />
                   </Box>
@@ -443,13 +460,11 @@ export default function ServiceForm({ service, onClose }) {
                 <Typography variant="subtitle1" sx={{ fontWeight: 'medium', mb: 2 }}>
                   Main Service Button
                 </Typography>
-                <TextField
+                <LocalizedInput
                   label="Button Text (e.g., 'Learn More')"
-                  fullWidth
-                  size="small"
                   value={obj.main_button.name}
                   onChange={(e) => handleTextChange(e, 'button', 0, 'name')}
-                  sx={{ mb: 2 }}
+                  className="mb-4"
                 />
                 <TextField
                   label="Button Link (e.g., '/contact-us')"
@@ -495,7 +510,7 @@ export default function ServiceForm({ service, onClose }) {
         </Stepper>
 
         {saving && <LinearProgress sx={{ mb: 3 }} />}
-        
+
         {(localError || saveError) && (
           <Box sx={{ mb: 3, p: 2, bgcolor: 'red.50', border: '1px solid', borderColor: 'red.300', borderRadius: '8px' }}>
             <Typography color="error">
@@ -515,9 +530,9 @@ export default function ServiceForm({ service, onClose }) {
           onClick={handleBack}
           startIcon={<ChevronLeft />}
           variant="outlined"
-          sx={{ 
-            color: PRIMARY_COLOR, 
-            borderColor: PRIMARY_COLOR, 
+          sx={{
+            color: PRIMARY_COLOR,
+            borderColor: PRIMARY_COLOR,
             "&:hover": { borderColor: HOVER_COLOR, backgroundColor: 'gray.50' },
             px: 3,
           }}
@@ -533,8 +548,8 @@ export default function ServiceForm({ service, onClose }) {
               }}
               endIcon={<ChevronRight />}
               disabled={saving}
-              sx={{ 
-                backgroundColor: PRIMARY_COLOR, 
+              sx={{
+                backgroundColor: PRIMARY_COLOR,
                 "&:hover": { backgroundColor: HOVER_COLOR },
                 px: 4,
                 py: 1.5,
@@ -547,8 +562,8 @@ export default function ServiceForm({ service, onClose }) {
               variant="contained"
               onClick={handleSubmit}
               disabled={saving}
-              sx={{ 
-                backgroundColor: '#4CAF50', 
+              sx={{
+                backgroundColor: '#4CAF50',
                 "&:hover": { backgroundColor: '#388E3C' },
                 px: 4,
                 py: 1.5,

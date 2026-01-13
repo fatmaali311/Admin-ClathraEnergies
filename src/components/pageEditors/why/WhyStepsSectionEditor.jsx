@@ -1,9 +1,8 @@
 import React from 'react';
 import Card from '../../ui/Card';
-import InputGroup from '../../ui/InputGroup';
-import Button from '../../ui/Button';
 import MediaUpload from '../../ui/MediaUpload';
 import { getAdminImageUrl } from '../../../lib/mediaUtils';
+import LocalizedInput from '../../ui/LocalizedInput';
 
 const WhyStepsSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
     const {
@@ -105,101 +104,101 @@ const WhyStepsSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
             {/* Text fields used throughout the Why page */}
             {/* Stats section: include a section title plus two text fields */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <InputGroup
-                    title="Stats Section Title"
+                <LocalizedInput
+                    label="Stats Section Title"
                     name="stats_section.title"
-                    value={stats.title || ''}
+                    value={stats.title}
                     onChange={handleInputChange}
                 />
-                <InputGroup
-                    title="Methane Text"
+                <LocalizedInput
+                    label="Methane Text"
                     name="stats_section.methane_text"
-                    value={stats.methane_text || ''}
+                    value={stats.methane_text}
                     onChange={handleInputChange}
                 />
-                <InputGroup
-                    title="Brand Label"
+                <LocalizedInput
+                    label="Brand Label"
                     name="stats_section.brand_text"
-                    value={stats.brand_text || ''}
+                    value={stats.brand_text}
                     onChange={handleInputChange}
                 />
             </div>
 
             {/* Temperature section title (separate row) */}
             <div className="mb-4">
-                <InputGroup
-                    title="Temperature Section Title"
+                <LocalizedInput
+                    label="Temperature Section Title"
                     name="temp_section.title"
-                    value={temps.title || ''}
+                    value={temps.title}
                     onChange={handleInputChange}
                 />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <InputGroup
-                    title="Left Section Label"
+                <LocalizedInput
+                    label="Left Section Label"
                     name="temp_section.left_label"
-                    value={temps.left_label || ''}
+                    value={temps.left_label}
                     onChange={handleInputChange}
                 />
-                <InputGroup
-                    title="Left Temperature"
+                <LocalizedInput
+                    label="Left Temperature"
                     name="temp_section.left_temp"
-                    value={temps.left_temp || ''}
+                    value={temps.left_temp}
                     onChange={handleInputChange}
                 />
-                <InputGroup
-                    title="Right Section Label"
+                <LocalizedInput
+                    label="Right Section Label"
                     name="temp_section.right_label"
-                    value={temps.right_label || ''}
+                    value={temps.right_label}
                     onChange={handleInputChange}
                 />
-                <InputGroup
-                    title="Right Temperature"
+                <LocalizedInput
+                    label="Right Temperature"
                     name="temp_section.right_temp"
-                    value={temps.right_temp || ''}
+                    value={temps.right_temp}
                     onChange={handleInputChange}
                 />
             </div>
 
             {/* Safe Section Title and Card Label (grid) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <InputGroup
-                    title="Safe Section Title"
+                <LocalizedInput
+                    label="Safe Section Title"
                     name="safe_section.title"
-                    value={safe.title || ''}
+                    value={safe.title}
                     onChange={handleInputChange}
                 />
-                <InputGroup
-                    title="Safe Card Label"
+                <LocalizedInput
+                    label="Safe Card Label"
                     name="safe_section.card_label"
-                    value={safe.card_label || ''}
+                    value={safe.card_label}
                     onChange={handleInputChange}
                 />
             </div>
 
             {/* Economics Section Title (separate row like Temperature) */}
             <div className="mb-4">
-                <InputGroup
-                    title="Economics Section Title"
+                <LocalizedInput
+                    label="Economics Section Title"
                     name="economics_section.title"
-                    value={econ.title || ''}
+                    value={econ.title}
                     onChange={handleInputChange}
                 />
             </div>
 
             {/* Economics CAPEX & OPEX Texts */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                <InputGroup
-                    title="CAPEX Text"
+                <LocalizedInput
+                    label="CAPEX Text"
                     name="economics_section.capex_text"
-                    value={econ.capex_text || ''}
+                    value={econ.capex_text}
                     onChange={handleInputChange}
                 />
-                <InputGroup
-                    title="OPEX Text"
+                <LocalizedInput
+                    label="OPEX Text"
                     name="economics_section.opex_text"
-                    value={econ.opex_text || ''}
+                    value={econ.opex_text}
                     onChange={handleInputChange}
                 />
             </div>

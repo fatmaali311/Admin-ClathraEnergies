@@ -6,7 +6,7 @@ import leftImg from '../../assets/images/image.jpeg';
 
 const containerVariants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.25 } }
+  visible: { transition: { staggerChildren: 0.25 } }        
 };
 
 const SetupAccountPage = () => {

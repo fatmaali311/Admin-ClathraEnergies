@@ -1,47 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Box, IconButton, Typography, CircularProgress
+  TextField, Button, Box, IconButton, Typography, CircularProgress,
+  Select, MenuItem, FormControl, InputLabel
 } from '@mui/material';
 import { Close as CloseIcon, Save as SaveIcon, AddCircle as AddCircleIcon } from '@mui/icons-material';
 import { createPosition, updatePosition } from '../../services/positionService';
-import { useToast } from '../../hooks/useToast';
+import { toast } from 'react-toastify';
+
+import LocalizedInput from '../ui/LocalizedInput';
+import LocalizedTextArea from '../ui/LocalizedTextArea';
 
 const PRIMARY_COLOR = "#ADD0B3";
 const HOVER_COLOR = "#8CB190";
 
-export default function PositionFormModal({ open, onClose, position, token }) {
+export default function PositionFormModal({ open, onClose, position }) {
   const isEdit = !!position;
+  // Helper to ensure localized object
+  const ensureLocalized = (val) => (typeof val === 'string' ? { en: val, fr: '', zh: '' } : { en: '', fr: '', zh: '', ...val });
+
   const [formData, setFormData] = useState({
-    name: '',
-    location: '',
+    name: { en: '', fr: '', zh: '' },
+    location: { en: '', fr: '', zh: '' },
     type: '',
-    whatWeOffer: '',
-    whyWeAreLooking: '',
-    responsibilities: '',
-    skills: ''
+    whatWeOffer: { en: '', fr: '', zh: '' },
+    whyWeAreLooking: { en: '', fr: '', zh: '' },
+    responsibilities: { en: '', fr: '', zh: '' },
+    skills: { en: '', fr: '', zh: '' }
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { showToast } = useToast();
 
   // Effect to populate form when editing a position
   useEffect(() => {
     if (isEdit && position) {
       setFormData({
-        name: position.name || '',
-        location: position.location || '',
+        name: ensureLocalized(position.name),
+        location: ensureLocalized(position.location),
         type: position.type || '',
-        whatWeOffer: position.whatWeOffer || '',
-        whyWeAreLooking: position.whyWeAreLooking || '',
-        responsibilities: position.responsibilities || '',
-        skills: position.skills || ''
+        whatWeOffer: ensureLocalized(position.whatWeOffer),
+        whyWeAreLooking: ensureLocalized(position.whyWeAreLooking),
+        responsibilities: ensureLocalized(position.responsibilities),
+        skills: ensureLocalized(position.skills)
       });
     } else {
       // Reset form for creation
       setFormData({
-        name: '', location: '', type: '', whatWeOffer: '',
-        whyWeAreLooking: '', responsibilities: '', skills: ''
+        name: { en: '', fr: '', zh: '' },
+        location: { en: '', fr: '', zh: '' },
+        type: '',
+        whatWeOffer: { en: '', fr: '', zh: '' },
+        whyWeAreLooking: { en: '', fr: '', zh: '' },
+        responsibilities: { en: '', fr: '', zh: '' },
+        skills: { en: '', fr: '', zh: '' }
       });
     }
     setError('');
@@ -56,21 +67,22 @@ export default function PositionFormModal({ open, onClose, position, token }) {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     // Simple validation
-    if (!formData.name || !formData.location || !formData.type) {
-        setError("Name, Location, and Type are required fields.");
-        setLoading(false);
-        return;
+    if (!formData.name?.en?.trim() || !formData.location?.en?.trim() || !formData.type) {
+      setError("Name, Location, and Type are required fields.");
+      setLoading(false);
+      return;
     }
 
     try {
       if (isEdit) {
-        await updatePosition(token, position._id, formData);
-        showToast(`Position "${formData.name}" updated successfully!`, 'success');
+        const posId = position._id || position.id || position;
+        await updatePosition(posId, formData);
+        toast.success(`Position "${formData.name}" updated successfully!`);
       } else {
-        await createPosition(token, formData);
-        showToast(`Position "${formData.name}" created successfully!`, 'success');
+        await createPosition(formData);
+        toast.success(`Position "${formData.name}" created successfully!`);
       }
       onClose(true); // Close and signal that a refresh is needed
     } catch (err) {
@@ -83,8 +95,8 @@ export default function PositionFormModal({ open, onClose, position, token }) {
 
   return (
     <Dialog open={open} onClose={() => onClose()} fullWidth maxWidth="md"
-        PaperProps={{ sx: { borderTop: `4px solid ${PRIMARY_COLOR}`, borderRadius: '12px' } }}>
-      <DialogTitle sx={{ backgroundColor: PRIMARY_COLOR, color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      PaperProps={{ sx: { borderTop: `4px solid ${PRIMARY_COLOR}`, borderRadius: '12px' } }}>
+      <DialogTitle component="div" sx={{ backgroundColor: PRIMARY_COLOR, color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h5" fontWeight="bold">
           {isEdit ? `Edit Position: ${position?.name}` : 'Create New Position'}
         </Typography>
@@ -92,26 +104,42 @@ export default function PositionFormModal({ open, onClose, position, token }) {
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      
+
       <Box component="form" onSubmit={handleSubmit}>
         <DialogContent dividers sx={{ backgroundColor: 'gray.50', p: 4 }}>
           {error && <Typography color="error" gutterBottom>{error}</Typography>}
-          
+
           <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-            <TextField label="Position Name" name="name" value={formData.name} onChange={handleChange} required />
-            <TextField label="Location" name="location" value={formData.location} onChange={handleChange} required />
-            <TextField label="Type (e.g., Full-time, Internship)" name="type" value={formData.type} onChange={handleChange} required />
+            <LocalizedInput label="Position Name" name="name" value={formData.name} onChange={handleChange} required className="mb-0" />
+            <LocalizedInput label="Location" name="location" value={formData.location} onChange={handleChange} required className="mb-0" />
+            <FormControl fullWidth required>
+              <InputLabel id="type-select-label">Type</InputLabel>
+              <Select
+                labelId="type-select-label"
+                id="type-select"
+                name="type"
+                value={formData.type}
+                label="Type"
+                onChange={handleChange}
+              >
+                {['Full-time', 'Part-time', 'Internship', 'Freelance', 'Contract', 'Temporary'].map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {type}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Box>
 
-          <TextField label="What We Offer" name="whatWeOffer" value={formData.whatWeOffer} onChange={handleChange} multiline rows={3} fullWidth margin="normal" />
-          <TextField label="Why We Are Looking" name="whyWeAreLooking" value={formData.whyWeAreLooking} onChange={handleChange} multiline rows={3} fullWidth margin="normal" />
-          <TextField label="Responsibilities" name="responsibilities" value={formData.responsibilities} onChange={handleChange} multiline rows={5} fullWidth margin="normal" />
-          <TextField label="Required Skills (e.g., HTML, React, NodeJS)" name="skills" value={formData.skills} onChange={handleChange} multiline rows={3} fullWidth margin="normal" />
+          <LocalizedTextArea label="What We Offer" name="whatWeOffer" value={formData.whatWeOffer} onChange={handleChange} rows={3} className="mt-4" />
+          <LocalizedTextArea label="Why We Are Looking" name="whyWeAreLooking" value={formData.whyWeAreLooking} onChange={handleChange} rows={3} />
+          <LocalizedTextArea label="Responsibilities" name="responsibilities" value={formData.responsibilities} onChange={handleChange} rows={5} />
+          <LocalizedTextArea label="Required Skills (e.g., HTML, React, NodeJS)" name="skills" value={formData.skills} onChange={handleChange} rows={3} />
         </DialogContent>
 
         <DialogActions sx={{ p: 3, justifyContent: 'center', backgroundColor: 'white' }}>
           <Button onClick={() => onClose()} variant="outlined" disabled={loading}
-             sx={{ color: PRIMARY_COLOR, borderColor: PRIMARY_COLOR, '&:hover': { borderColor: HOVER_COLOR } }}>
+            sx={{ color: PRIMARY_COLOR, borderColor: PRIMARY_COLOR, '&:hover': { borderColor: HOVER_COLOR } }}>
             Cancel
           </Button>
           <Button type="submit" variant="contained" disabled={loading} startIcon={isEdit ? <SaveIcon /> : <AddCircleIcon />}

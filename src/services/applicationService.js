@@ -1,134 +1,54 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+import BaseService from "./baseService";
+import apiClient from "../lib/apiClient";
+import { getExtractableId } from "../lib/apiUtils";
 
-const getHeaders = (token, contentType = "application/json") => {
-  const headers = {
-    "Accept": "application/json",
-    "Authorization": `Bearer ${token}`,
-  };
-  if (contentType) {
-    headers["Content-Type"] = contentType;
+class ApplicationService extends BaseService {
+  constructor() {
+    super('/applications');
   }
-  return headers;
-};
 
-// GET all applications (Admins only)
-export const getApplications = async (token, page = 1, limit = 10, status = '', positionId = '') => {
-  try {
-    let url = `${API_BASE_URL}/applications?page=${page}&limit=${limit}`;
-    if (status) {
-      url += `&status=${status}`;
-    }
-    if (positionId) {
-      url += `&positionId=${encodeURIComponent(positionId)}`;
-    }
+  // Override getAll if we need specific param mappings, but base might suffice matches.
+  // Original: page, limit, status, positionId
+  // Base: params object.
+  // We will call it as: getAll({ page, limit, status, positionId })
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: getHeaders(token, "application/json"),
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("❌ Failed to fetch applications:", response.status, errText);
-      return null;
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("❌ Error fetching applications:", error);
-    return null;
+  // Custom method: PATCH status
+  async updateStatus(idOrObj, newStatus) {
+    const id = getExtractableId(idOrObj);
+    return await apiClient.patch(`${this.endpoint}/${id}/status?status=${newStatus}`);
   }
-};
 
-// GET single application (Admins only)
-export const getApplicationById = async (token, id) => {
-    try {
-        const response = await fetch(`${API_BASE_URL}/applications/${id}`, {
-            method: "GET",
-            headers: getHeaders(token),
-        });
-
-        if (!response.ok) {
-            const errText = await response.text();
-            console.error("❌ Failed to fetch application:", response.status, errText);
-            throw new Error(errText);
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error("❌ Error fetching application:", error);
-        throw error;
-    }
-};
-
-// PATCH update application status (Admins only)
-export const updateApplicationStatus = async (token, id, newStatus) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/applications/${id}/status?status=${newStatus}`, {
-      method: "PATCH",
-      headers: getHeaders(token, "application/json"),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Failed to update status.' }));
-      console.error("❌ Failed to update application status:", response.status, errorData);
-      throw new Error(errorData.message || 'Failed to update status.');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("❌ Error updating application status:", error);
-    throw error;
+  // Custom method: Stats
+  async getStatistics(year = null, month = null) {
+      const params = {};
+      if (year != null) params.year = year;
+      if (month != null) params.month = month;
+      
+      const queryString = this.buildQuery(params);
+      return await apiClient.get(`${this.endpoint}/statistics${queryString}`);
   }
+}
+
+const applicationService = new ApplicationService();
+
+// Export individual methods for backward compatibility if needed, 
+// or export the instance as default. 
+// The existing code uses named exports: getApplications, etc.
+// I should export adapters to avoid breaking changes in pages immediately, 
+// or I can update the imports. Updating imports is cleaner but more work.
+// I'll export adapters for now to support incremental refactor, 
+// but eventually, we want to use the instance.
+
+export const getApplications = (page, limit, status, positionId) => {
+    return applicationService.getAll({ page, limit, status, positionId });
 };
 
-// DELETE an application (Admins only)
-export const deleteApplication = async (token, id) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/applications/${id}`, {
-      method: "DELETE",
-      headers: getHeaders(token, "application/json"),
-    });
+export const getApplicationById = (id) => applicationService.getById(id);
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("❌ Failed to delete application:", response.status, errText);
-      throw new Error(errText);
-    }
-    
-    // Check if the response has content
-    const result = response.status !== 204 ? await response.json() : { message: "Application deleted successfully" };
-    return result;
-  } catch (error) {
-    console.error("❌ Error deleting application:", error);
-    throw error;
-  }
-};
+export const updateApplicationStatus = (id, status) => applicationService.updateStatus(id, status);
 
-// GET applications statistics (Admins only)
-export const getApplicationsStatistics = async (token, year = null, month = null) => {
-  try {
-    let url = `${API_BASE_URL}/applications/statistics`;
-    const params = [];
-    if (year != null) params.push(`year=${year}`);
-    if (month != null) params.push(`month=${month}`);
-    if (params.length) url += `?${params.join('&')}`;
+export const deleteApplication = (id) => applicationService.delete(id);
 
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: getHeaders(token, 'application/json'),
-    });
+export const getApplicationsStatistics = (year, month) => applicationService.getStatistics(year, month);
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('❌ Failed to fetch applications statistics:', response.status, errText);
-      return null;
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('❌ Error fetching applications statistics:', error);
-    return null;
-  }
-};
-
+export default applicationService;

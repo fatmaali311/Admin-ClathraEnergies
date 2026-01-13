@@ -2,6 +2,8 @@ import React from 'react';
 import Card from '../../ui/Card';
 import InputGroup from '../../ui/InputGroup';
 import Button from '../../ui/Button';
+import LocalizedInput from '../../ui/LocalizedInput';
+import LocalizedTextArea from '../../ui/LocalizedTextArea';
 import DetailItemEditor from './DetailItemEditor';
 
 const CompanyPurposeSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
@@ -25,34 +27,28 @@ const CompanyPurposeSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => 
     <Card
       title="Company Purpose & Details"
       id="company-purpose"
-      className={`transition-all duration-300 ${
-        isActive ? 'ring-4 ring-opacity-50' : ''
-      }`}
+      className={`transition-all duration-300 ${isActive ? 'ring-4 ring-opacity-50' : ''
+        }`}
       style={{
         '--tw-ring-color': PRIMARY_COLOR,
       }}
     >
       {/* Main Title */}
-      <InputGroup
-        title="Main Title"
+      <LocalizedInput
+        label="Main Title"
         name="company_purpose.title"
-        value={pageData.company_purpose?.title || ''}
+        value={pageData.company_purpose?.title}
         onChange={handleInputChange}
       />
 
       {/* Subtitle */}
-      <div className="mt-4">
-        <label className="block text-md font-semibold text-gray-700 mb-1">
-          Main Subtitle / Paragraph
-        </label>
-        <textarea
-          name="company_purpose.sub_title"
-          value={pageData.company_purpose?.sub_title || ''}
-          onChange={handleInputChange}
-          rows="4"
-          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[var(--tw-ring-color)] text-base"
-        />
-      </div>
+      <LocalizedTextArea
+        label="Main Subtitle / Paragraph"
+        name="company_purpose.sub_title"
+        value={pageData.company_purpose?.sub_title}
+        onChange={handleInputChange}
+        rows={4}
+      />
 
       {/* Company Details */}
       <h3 className="text-xl font-bold text-gray-800 mt-8 mb-4 border-t pt-4">
@@ -75,19 +71,22 @@ const CompanyPurposeSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => 
         ))}
       </div>
 
-      <Button
-        type="button"
-        onClick={() =>
-          handleAddItem(detailsPath, {
-            title: 'New Detail',
-            sub_title: 'Explain the detail here.',
-            bg_color: '#F0F4F8',
-          })
-        }
-        className="mt-6 bg-[var(--tw-ring-color)] hover:opacity-90 text-white font-semibold py-2 rounded-xl w-full transition-all duration-200"
-      >
-        + Add New Company Detail
-      </Button>
+      <div className="pt-6">
+        <Button
+          type="button"
+          onClick={() =>
+            handleAddItem(detailsPath, {
+              title: { en: 'New Detail', fr: '', zh: '' },
+              sub_title: { en: 'Explain the detail here.', fr: '', zh: '' },
+              bg_color: '#F0F4F8',
+            })
+          }
+          className="w-full py-2.5 text-white font-semibold rounded-xl shadow-md hover:brightness-105 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+          style={{ background: `linear-gradient(135deg, ${PRIMARY_COLOR}, #8CB190)` }}
+        >
+          <span className="text-lg">+</span> Add New Company Detail
+        </Button>
+      </div>
     </Card>
   );
 };

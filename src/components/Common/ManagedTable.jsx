@@ -7,6 +7,7 @@ import {
   TableHead, TableRow, Paper, Box, Pagination, Typography, CircularProgress, Button
 } from '@mui/material';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
+import { getLocalizedValue } from '../../lib/apiUtils';
 
 const DEFAULT_PRIMARY = PRIMARY_COLOR;
 
@@ -78,7 +79,7 @@ export default function ManagedTable({
       )}
     >
       <TableContainer component={Paper} elevation={3} sx={tableContainerSx}>
-        <Table>
+        <Table sx={{ minWidth: 800 }}>
           <TableHead>
             <TableRow sx={headerRowSx(primaryColor)}>
               {columns.map((col) => (
@@ -97,11 +98,26 @@ export default function ManagedTable({
                 </TableRow>
               )
             ) : (
-              rows.map((row) => (
-                <TableRow key={row._id || row.id || JSON.stringify(row)} hover sx={getRowSx ? getRowSx(row) : undefined}>
+              rows.map((row, index) => (
+                <TableRow
+                  key={
+                    (row._id && typeof row._id === 'string' && row._id) ||
+                    (row.id && typeof row.id === 'string' && row.id) ||
+                    `row-${index}`
+                  }
+                  hover
+                  sx={getRowSx ? getRowSx(row) : undefined}
+                >
                   {columns.map((col) => (
                     <TableCell key={col.key} className={col.className || ''}>
-                      {col.render ? col.render(row) : row[col.key]}
+                      {col.render ? col.render(row) : (() => {
+                        const val = row[col.key];
+                        // Safety check for localized objects to prevent React errors
+                        if (val && typeof val === 'object' && !React.isValidElement(val)) {
+                          return getLocalizedValue(val);
+                        }
+                        return val;
+                      })()}
                     </TableCell>
                   ))}
                   {hasActions && <TableCell className="px-4 py-3">{renderRow(row)}</TableCell>}
@@ -115,7 +131,24 @@ export default function ManagedTable({
       {/* Pagination */}
       {onPageChange && totalPages > 0 && (
         <Box display="flex" justifyContent="center" mt={3}>
-          <Pagination count={totalPages} page={page} onChange={(e, v) => onPageChange(v)} color="primary" />
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(e, v) => onPageChange(v)}
+            color="primary" // Although MUI prop exists, we override styles for exact match if needed
+            sx={{
+              '& .MuiPaginationItem-root': {
+                '&.Mui-selected': {
+                  backgroundColor: primaryColor,
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: primaryColor,
+                    opacity: 0.9,
+                  },
+                },
+              },
+            }}
+          />
         </Box>
       )}
     </TableShell>

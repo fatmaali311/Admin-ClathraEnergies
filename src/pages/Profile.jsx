@@ -169,11 +169,10 @@ const Profile = () => {
                   value={values.fullName}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`w-full border rounded-lg p-2 focus:ring-[#ADD0B3] focus:border-[#ADD0B3] ${
-                    touched.fullName && errors.fullName
+                  className={`w-full border rounded-lg p-2 focus:ring-[#ADD0B3] focus:border-[#ADD0B3] ${touched.fullName && errors.fullName
                       ? "border-red-500"
                       : "border-gray-300"
-                  }`}
+                    }`}
                   placeholder="Enter your full name"
                 />
                 {touched.fullName && errors.fullName && (
@@ -192,11 +191,10 @@ const Profile = () => {
                   value={values.userName}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`w-full border rounded-lg p-2 focus:ring-[#ADD0B3] focus:border-[#ADD0B3] ${
-                    touched.userName && errors.userName
+                  className={`w-full border rounded-lg p-2 focus:ring-[#ADD0B3] focus:border-[#ADD0B3] ${touched.userName && errors.userName
                       ? "border-red-500"
                       : "border-gray-300"
-                  }`}
+                    }`}
                   placeholder="Enter your username"
                 />
                 {touched.userName && errors.userName && (
@@ -215,11 +213,10 @@ const Profile = () => {
                   value={values.email}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`w-full border rounded-lg p-2 focus:ring-[#ADD0B3] focus:border-[#ADD0B3] ${
-                    touched.email && errors.email
+                  className={`w-full border rounded-lg p-2 focus:ring-[#ADD0B3] focus:border-[#ADD0B3] ${touched.email && errors.email
                       ? "border-red-500"
                       : "border-gray-300"
-                  }`}
+                    }`}
                   placeholder="Enter your email"
                 />
                 {touched.email && errors.email && (
@@ -238,11 +235,10 @@ const Profile = () => {
                   value={values.password}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`w-full border rounded-lg p-2 focus:ring-[#ADD0B3] focus:border-[#ADD0B3] ${
-                    touched.password && errors.password
+                  className={`w-full border rounded-lg p-2 focus:ring-[#ADD0B3] focus:border-[#ADD0B3] ${touched.password && errors.password
                       ? "border-red-500"
                       : "border-gray-300"
-                  }`}
+                    }`}
                   placeholder="Enter new password"
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -258,11 +254,10 @@ const Profile = () => {
                 <button
                   type="submit"
                   disabled={loading || !formik.isValid}
-                  className={`flex justify-center items-center gap-3 text-white px-8 py-3 rounded-2xl font-semibold text-lg hover:opacity-90 transition-all duration-300 shadow-xl ${
-                    loading || !formik.isValid
+                  className={`flex justify-center items-center gap-3 text-white px-8 py-3 rounded-2xl font-semibold text-lg hover:opacity-90 transition-all duration-300 shadow-xl ${loading || !formik.isValid
                       ? "opacity-70 cursor-not-allowed"
                       : ""
-                  }`}
+                    }`}
                   style={{ backgroundColor: "#ADD0B3" }}
                 >
                   {loading ? (

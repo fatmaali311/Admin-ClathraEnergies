@@ -1,8 +1,10 @@
 import React from 'react';
 import Card from '../../ui/Card';
-import InputGroup from '../../ui/InputGroup';
 import MediaUpload from '../../ui/MediaUpload';
 import { getAdminImageUrl } from '../../../lib/mediaUtils';
+import LocalizedInput from '../../ui/LocalizedInput';
+import LocalizedTextArea from '../../ui/LocalizedTextArea';
+import InputGroup from '../../ui/InputGroup'; // Keep for non-localized inputs like Button Link
 
 const GasSeparationSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
     const {
@@ -21,18 +23,18 @@ const GasSeparationSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
     return (
         <Card title="Gas Separation" color={PRIMARY_COLOR} id="gas-separation" className={activeCardClass}>
 
-            <div className="grid grid-cols-1 gap-4">
-                <InputGroup
-                    title="Section Title"
+            <div className="space-y-6">
+                <LocalizedInput
+                    label="Section Title"
                     name="gas_separation.title"
-                    value={gasSection.title || ''}
+                    value={gasSection.title}
                     onChange={handleInputChange}
                 />
 
-                <InputGroup
-                    title="Section Subtitle"
+                <LocalizedTextArea
+                    label="Section Subtitle"
                     name="gas_separation.sub_title"
-                    value={gasSection.sub_title || ''}
+                    value={gasSection.sub_title}
                     onChange={handleInputChange}
                 />
             </div>
@@ -158,10 +160,10 @@ const GasSeparationSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
             <div className="mt-8">
                 <h4 className="text-md font-semibold mb-2">Button</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <InputGroup
-                        title="Button Title"
+                    <LocalizedInput
+                        label="Button Title"
                         name="gas_separation.button.title"
-                        value={(gasSection.button && gasSection.button.title) || ''}
+                        value={(gasSection.button && gasSection.button.title)}
                         onChange={handleInputChange}
                     />
 
@@ -181,16 +183,12 @@ const GasSeparationSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
                 {(gasSection.gases || []).map((g, index) => (
                     <div key={index} className="p-4 bg-white border border-gray-200 rounded-lg">
                         <div className="grid grid-cols-1 gap-4">
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Gas Name</label>
-                                <input
-                                    type="text"
-                                    name={`gas_separation.gases.${index}.name`}
-                                    value={g.name || ''}
-                                    onChange={(e) => handleArrayItemChange('gas_separation.gases', index, 'name', e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none"
-                                />
-                            </div>
+                            <LocalizedInput
+                                label="Gas Name"
+                                name="name"
+                                value={g.name}
+                                onChange={(e) => handleArrayItemChange('gas_separation.gases', index, 'name', e.target.value)}
+                            />
 
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">Color</label>
@@ -226,7 +224,7 @@ const GasSeparationSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
                 ))}
             </div>
 
-  
+
 
         </Card>
     );

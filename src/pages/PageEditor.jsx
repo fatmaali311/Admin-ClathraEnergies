@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import DashboardLayout from '../layout/DashboardLayout';
 import usePageForm from '../hooks/usePageForm';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import Toast from '../components/ui/Toast';
 import HomeContentEditor from './HomeContentEditor';
 import AboutUsContentEditor from './AboutUsContentEditor';
 import CareersContentEditor from './CareersContentEditor';
@@ -14,7 +13,7 @@ import WhyTechnologyContentEditor from './WhyTechnologyContentEditor';
 import OurTechnologyContentEditor from './OurTechnologyContentEditor';
 import BiogasSolutionsContentEditor from './BiogasSolutionsContentEditor';
 
-const DefaultEditorFallback = ({ pageTitle, isLoading }) => {
+const DefaultEditorFallback = ({ pageTitle }) => {
     const formattedTitle = pageTitle.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     return (
         <DashboardLayout>
@@ -36,8 +35,6 @@ const DefaultEditorFallback = ({ pageTitle, isLoading }) => {
 
 const PageEditor = () => {
     const { pageTitle } = useParams();
-    // Call the page form hook at the top level to satisfy the Rules of Hooks
-    const form = usePageForm(pageTitle);
 
     switch (pageTitle) {
         case 'home':
@@ -59,7 +56,7 @@ const PageEditor = () => {
         case 'applications':
             return <ApplicationManagementPage />;
         default:
-            return <DefaultEditorFallback pageTitle={pageTitle} isLoading={form.isLoading} />;
+            return <DefaultEditorFallback pageTitle={pageTitle} />;
     }
 };
 

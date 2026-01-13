@@ -1,14 +1,13 @@
-// src/pages/Auth/LoginForm.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useLogin } from '../../hooks/useLogin';
-// Assuming these are defined elsewhere
 import AuthFormHeader from '../ui/AuthFormHeader';
 import AuthInputField from '../ui/AuthInputField';
 import AuthButton from '../ui/AuthButton';
 import Alert from '../../../components/ui/Alert';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { AUTH_ANIMATION_VARIANTS, PASSWORD_REGEX, PASSWORD_ERROR_MESSAGE } from '../../utils/authConstants';
 
 const LoginSchema = Yup.object().shape({
     email: Yup.string()
@@ -17,10 +16,7 @@ const LoginSchema = Yup.object().shape({
     password: Yup.string()
         .min(8, 'Password must be at least 8 characters')
         .max(50, 'Password is too long')
-        .matches(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-            'Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character'
-        )
+        .matches(PASSWORD_REGEX, PASSWORD_ERROR_MESSAGE)
         .required('Password is required'),
 });
 
@@ -39,7 +35,7 @@ const LoginForm = () => {
 
     return (
         <motion.div
-            variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.7 } } }}
+            variants={AUTH_ANIMATION_VARIANTS.container}
             initial="hidden"
             animate="visible"
         >
@@ -86,7 +82,7 @@ const LoginForm = () => {
                     aria-describedby={touched.password && errors.password ? 'password-error' : undefined}
                 />
 
-                <AuthButton type="submit" loading={isSubmitting} disabled={isSubmitting || !isValid}>
+                <AuthButton type="submit" loading={isSubmitting} disabled={isSubmitting}>
                     {isSubmitting ? (
                         <>
                             <span className="animate-spin inline-block mr-2">⏳</span> Signing in...

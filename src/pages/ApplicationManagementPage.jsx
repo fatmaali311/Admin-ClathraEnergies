@@ -1,37 +1,39 @@
 import React, { useState } from "react";
-import DashboardLayout from '../layout/DashboardLayout'; 
-import Toast from '../components/ui/Toast'; 
+import DashboardLayout from '../layout/DashboardLayout';
+import { toast } from "react-toastify";
 import { useAuth } from "../contexts/AuthContext";
 import { useApplications } from "../hooks/useApplications";
 import { usePositions } from "../hooks/usePositions";
-import { useToast } from "../hooks/useToast";
 import ApplicationTable from "../components/application/ApplicationTable";
 import ApplicationDetailsModal from "../components/application/ApplicationDetailsModal";
 import { ConfirmDialog } from "../components/Common/ConfirmDialog";
 import { deleteApplication } from "../services/applicationService";
-import { Pagination, Box, Typography } from "@mui/material";
+import { Pagination, Box } from "@mui/material";
+import { getLocalizedValue } from "../lib/apiUtils";
 
 const PRIMARY_COLOR = "#ADD0B3";
 
 export default function ApplicationManagementPage() {
-  const { token, loading: authLoading } = useAuth();
-  const { toast, showToast, closeToast } = useToast(); 
+  const { loading: authLoading } = useAuth();
+  // const { toastLegacy, showToastLegacy, closeToastLegacy } = useToast(); // Removed legacy toast hook
 
-  const [page, setPage] = useState(1);
   const [filterStatus, setFilterStatus] = useState('');
   const [filterPositionId, setFilterPositionId] = useState('');
   const [viewingApplication, setViewingApplication] = useState(null);
-  
+
   // Delete state
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [applicationToDelete, setApplicationToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch positions for position filter dropdown (small page, no pagination here)
-  const { positions: allPositions = [] } = usePositions(token, 1, 100);
+  const { positions: allPositions = [] } = usePositions({ page: 1, limit: 100 });
 
-  const { applications, loading, totalPages, totalApplications, refetchApplications } =
-    useApplications(token, page, 10, filterStatus, filterPositionId);
+  // Use autonomous pagination
+  const { resource, refetchApplications, applications, totalApplications } =
+    useApplications({ status: filterStatus, positionId: filterPositionId });
+
+  const { loading } = resource;
 
   // --- Delete Handlers (using Modal) ---
 
@@ -39,17 +41,17 @@ export default function ApplicationManagementPage() {
     setApplicationToDelete(application);
     setDeleteConfirmOpen(true);
   };
-  
+
   const handleConfirmDelete = async () => {
     if (!applicationToDelete) return;
 
     setIsDeleting(true);
     try {
-      await deleteApplication(token, applicationToDelete._id);
-      showToast('Application deleted successfully!', 'success'); // SUCCESS TOAST
+      await deleteApplication(applicationToDelete._id);
+      toast.success('Application deleted successfully!');
       refetchApplications();
     } catch (error) {
-      showToast(`Failed to delete application: ${error.message}`, 'error'); // ERROR TOAST
+      toast.error(`Failed to delete application: ${error.message}`);
     } finally {
       setIsDeleting(false);
       setDeleteConfirmOpen(false);
@@ -62,18 +64,14 @@ export default function ApplicationManagementPage() {
   const handleView = (application) => {
     setViewingApplication(application);
   };
-  
+
   const handleFilterChange = (status) => {
     setFilterStatus(status);
-    setPage(1);
+    // Page reset handled by useResource internal logic (via useEffect in hook or setFilters)
   };
 
   if (authLoading) {
     return <div className="flex justify-center py-10 text-xl text-gray-700">🔄 Checking session...</div>;
-  }
-
-  if (!token) {
-    return <div className="text-center py-10 text-red-500 font-semibold">🚫 Unauthorized. Please login.</div>;
   }
 
   return (
@@ -94,39 +92,17 @@ export default function ApplicationManagementPage() {
 
         {/* --- Application Table --- */}
         <ApplicationTable
-          applications={applications}
-          loading={loading}
+          resource={resource}
           onView={handleView}
           onDelete={handleDeleteClick} // Use the modal handler
-          onRefresh={refetchApplications}
           filterStatus={filterStatus}
           onFilterChange={handleFilterChange}
           positions={allPositions}
           filterPositionId={filterPositionId}
-          onPositionFilterChange={(v) => { setFilterPositionId(v); setPage(1); }}
+          onPositionFilterChange={(v) => { setFilterPositionId(v); }}
         />
 
-        {/* --- Pagination --- */}
-        {!loading && totalPages > 0 && (
-          <Box display="flex" justifyContent="center" mt={4}>
-            <Pagination
-              count={totalPages}
-              page={page}
-              onChange={(e, value) => setPage(value)}
-              color="primary"
-              disabled={loading}
-              sx={{
-                "& .MuiPaginationItem-root": {
-                  "&.Mui-selected": {
-                    backgroundColor: PRIMARY_COLOR,
-                    color: "white",
-                    "&:hover": { backgroundColor: '#8CB190' },
-                  },
-                },
-              }}
-            />
-          </Box>
-        )}
+        {/* --- Pagination Removed (Handled by ResourceTable) --- */}
       </div>
 
       {/* --- Modals and Toast --- */}
@@ -134,25 +110,20 @@ export default function ApplicationManagementPage() {
         open={!!viewingApplication}
         onClose={() => setViewingApplication(null)}
         application={viewingApplication}
-      /> 
+      />
 
       <ConfirmDialog
         open={deleteConfirmOpen}
         onClose={(v) => setDeleteConfirmOpen(!!v)}
         onConfirm={handleConfirmDelete}
         title={`Confirm Deletion`}
-        message={`Are you sure you want to delete the application from ${applicationToDelete ? `${applicationToDelete.firstName} ${applicationToDelete.lastName}` : ''}?`}
+        message={`Are you sure you want to delete the application from ${applicationToDelete ? `${getLocalizedValue(applicationToDelete.firstName)} ${getLocalizedValue(applicationToDelete.lastName)}` : ''}?`}
         confirmLabel={`Delete Application`}
         cancelLabel={`Cancel`}
         loading={isDeleting}
       />
-      
 
-      <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={closeToast}
-      />
+
     </DashboardLayout>
   );
 }

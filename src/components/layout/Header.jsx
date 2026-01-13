@@ -144,7 +144,7 @@ const Header = ({ toggleSidebar }) => {
                             <button
                                 onClick={handleLogout}
                                 className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-[#ADD0B3] hover:text-[#388E3C] transition-colors font-medium"
-                                role="menuitem" 
+                                role="menuitem"
                             >
                                 Logout
                             </button>

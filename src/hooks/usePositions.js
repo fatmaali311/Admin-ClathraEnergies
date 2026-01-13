@@ -1,43 +1,41 @@
-import { useEffect, useState } from "react";
-import { getPositions } from "../services/positionService";
+import { useCallback, useEffect } from "react";
+import positionService from "../services/positionService";
+import { useResource } from "./useResource";
 
 /**
  * Custom hook to fetch and manage paginated job positions.
- * @param {string} token - Authentication token.
- * @param {number} page - Current page number.
- * @param {number} limit - Items per page.
- * @returns {{positions: object[], loading: boolean, totalPages: number, totalPositions: number, refetchPositions: () => void}}
+ * @param {object} initialParams - Initial pagination parameters
  */
-export const usePositions = (token, page = 1, limit = 10) => {
-  const [positions, setPositions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [refreshToggle, setRefreshToggle] = useState(false);
+export const usePositions = (initialParams = {}) => {
+  const { page = 1, limit = 10 } = initialParams;
 
-  // Function to trigger a re-fetch of positions
-  const refetchPositions = () => setRefreshToggle(prev => !prev);
+  // If initialParams is scalar (backward compat check? No, let's assume object or update calls)
+  // Actually, usePositions(1, 100) was called in ApplicationManagementPage.
+  // I need to support (page, limit) arguments OR object?
+  // Or update ApplicationManagementPage to pass object. 
+  // ApplicationManagementPage: usePositions(1, 100) -> NO, it was `usePositions(1, 100)`.
+  // I must be careful.
+  
+  // Let's support both for safety or just update the call site.
+  // ApplicationManagementPage call site: `const { positions: allPositions = [] } = usePositions(1, 100);`
+  // I should update that call site too.
+  
+  const fetcher = useCallback((params) => positionService.getAll(params), []);
 
-  useEffect(() => {
-    const fetchPositions = async () => {
-      setLoading(true);
-      const data = await getPositions(token, page, limit);
+  const resource = useResource(fetcher, { page, limit });
+  const {
+      data: positions,
+      loading,
+      pagination: { totalPages, totalItems },
+      refresh
+  } = resource;
 
-      if (data && data.data) {
-        setPositions(data.data);
-        setTotalPages(data.totalPages || 1);
-        setTotal(data.total || 0);
-      } else {
-        setPositions([]);
-        setTotalPages(1);
-        setTotal(0);
-      }
-
-      setLoading(false);
-    };
-
-    if (token) fetchPositions();
-  }, [token, page, limit, refreshToggle]);
-
-  return { positions, loading, totalPages, totalPositions: total, refetchPositions };
+  return {
+    positions: positions || [],
+    loading,
+    totalPages,
+    totalPositions: totalItems,
+    refetchPositions: refresh,
+    resource
+  };
 };

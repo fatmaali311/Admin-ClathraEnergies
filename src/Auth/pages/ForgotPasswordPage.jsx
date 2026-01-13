@@ -1,10 +1,7 @@
 import React from 'react';
-// animation removed for simplicity (framer-motion not required here)
 import AuthLayout from '../components/ui/AuthLayout';
 import ForgotPasswordForm from '../components/forms/ForgotPasswordForm';
 import leftImg from '../../assets/images/image.jpeg';
-
-// animation containerVariants removed
 
 const ForgotPasswordPage = () => {
   return (
@@ -15,7 +12,7 @@ const ForgotPasswordPage = () => {
         backgroundImage={leftImg}
         rightContent={<ForgotPasswordForm />}
       />
-  </div>
+    </div>
   );
 };
 

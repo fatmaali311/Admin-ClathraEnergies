@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { useToast } from '../../hooks/useToast';
+import { toast } from 'react-toastify';
 import Card from '../ui/Card';
+import LocalizedInput from '../ui/LocalizedInput';
 
 const IconLookup = ({ value, onChange }) => (
   <select
@@ -20,7 +21,7 @@ const IconLookup = ({ value, onChange }) => (
 );
 
 const SocialLinksSection = ({ config, handleArrayAction, PRIMARY_COLOR }) => {
-  const { showToast } = useToast();
+  // const { showToastLegacy } = useToast(); // Removed legacy toast hook
 
   const handleUpdate = (index, field, value) => {
     handleArrayAction('socialLinks', 'UPDATE', index, field, value);
@@ -28,12 +29,12 @@ const SocialLinksSection = ({ config, handleArrayAction, PRIMARY_COLOR }) => {
 
   const handleAdd = () => {
     handleArrayAction('socialLinks', 'ADD');
-    showToast('Social link added', 'success');
+    toast.success('Social link added');
   };
 
   const handleRemove = (index) => {
     handleArrayAction('socialLinks', 'REMOVE', index);
-    showToast('Social link removed', 'success');
+    toast.success('Social link removed');
   };
 
   return (
@@ -45,13 +46,14 @@ const SocialLinksSection = ({ config, handleArrayAction, PRIMARY_COLOR }) => {
             className="flex flex-col md:flex-row items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-200"
           >
             {/* Name */}
-            <input
-              type="text"
-              placeholder="Platform Name"
-              value={link.name || ''}
-              onChange={(e) => handleUpdate(index, 'name', e.target.value)}
-              className="w-full md:w-1/5 px-3 py-2 border border-gray-300 rounded-lg text-lg"
-            />
+            <div className="w-full md:w-1/3">
+              <LocalizedInput
+                label="Platform Name"
+                name="name"
+                value={link.name}
+                onChange={(e) => handleUpdate(index, 'name', e.target.value)}
+              />
+            </div>
 
             {/* Link URL */}
             <input
@@ -68,7 +70,7 @@ const SocialLinksSection = ({ config, handleArrayAction, PRIMARY_COLOR }) => {
                 value={link.iconClass || ''}
                 onChange={(e) => handleUpdate(index, 'iconClass', e.target.value)}
               />
-          
+
             </div>
 
             {/* Remove Button */}

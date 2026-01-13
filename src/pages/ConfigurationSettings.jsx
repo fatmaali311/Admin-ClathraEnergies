@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import DashboardLayout from '../layout/DashboardLayout';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import Toast from '../components/ui/Toast';
+import { toast } from 'react-toastify';
 
 import SidebarNavigation from '../components/layout/SidebarNavigation';
 import useConfigForm from '../hooks/useConfigForm';
@@ -24,12 +24,10 @@ const SECTIONS = [
 const PRIMARY_COLOR = '#ADD0B3';
 
 const ConfigurationSettings = () => {
-  const token = localStorage.getItem('token');
+  // const token = localStorage.getItem('token'); // Removed
   const [activeSection, setActiveSection] = useState(SECTIONS[0].id);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [toast, setToast] = useState({ message: '', type: '' });
-
-  const closeToast = () => setToast({ message: '', type: '' });
+  // const [toast, setToast] = useState({ message: '', type: '' }); // Removed legacy toast state
 
   // Custom Hook
   const {
@@ -39,7 +37,7 @@ const ConfigurationSettings = () => {
     handleNestedChange,
     handleFileChange,
     handleArrayAction,
-  } = useConfigForm(token);
+  } = useConfigForm(); // Removed token arg
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,7 +47,7 @@ const ConfigurationSettings = () => {
       // Client-side size guard for large video files to avoid long hangs/failures in production
       const MAX_VIDEO_BYTES = 50 * 1024 * 1024; // 50 MB
       if (fileState?.mainVideo && fileState.mainVideo.size > MAX_VIDEO_BYTES) {
-        setToast({ message: `Selected video is too large (max 50MB). Please compress or upload a smaller file.`, type: 'error' });
+        toast.error(`Selected video is too large (max 50MB). Please compress or upload a smaller file.`);
         setIsSubmitting(false);
         return;
       }
@@ -69,7 +67,7 @@ const ConfigurationSettings = () => {
         configToSend.working_title = configToSend.hoursTitle;
         delete configToSend.hoursTitle;
       }
-      
+
       configToSend.workingHours = (configToSend.workingHours || [])
         .filter((item) => {
           if (item.isClosed) {
@@ -107,16 +105,16 @@ const ConfigurationSettings = () => {
       if (fileState.mainVideo) formData.append("main_video", fileState.mainVideo);
 
       // Replaced logger call with console.log
-      console.log("🚀 Sending Cleaned Configuration:", configToSend);
+      if (import.meta.env.DEV) {
+        console.log("🚀 Sending Cleaned Configuration:", configToSend);
+      }
 
       // ✅ Send to backend
-      const result = await updateConfigurationWithFiles(token, formData);
+      const result = await updateConfigurationWithFiles(formData);
+
 
       if (result.success) {
-        setToast({
-          message: result.message || "✅ Configuration saved successfully!",
-          type: "success",
-        });
+        toast.success(result.message || "✅ Configuration saved successfully!");
       } else {
         // ✅ LOGIC ADDED/IMPROVED: Display detailed errors from the backend
         let errorMsg = result.message || "❌ Failed to save configuration.";
@@ -133,17 +131,14 @@ const ConfigurationSettings = () => {
           errorMsg = `Validation failed: ${fieldErrors}`;
         }
 
-        setToast({ message: errorMsg, type: "error" });
+        toast.error(errorMsg);
       }
     } catch (err) {
       // ✅ Catch unexpected client-side errors
       // Replaced logger call with console.error
       console.error("❌ Unexpected error:", err);
 
-      setToast({
-        message: `Unexpected client error: ${err.message}`,
-        type: "error",
-      });
+      toast.error(`Unexpected client error: ${err.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -242,8 +237,6 @@ const ConfigurationSettings = () => {
         </form>
       </div>
 
-      {/* ✅ Global Toast Notification */}
-      <Toast message={toast.message} type={toast.type} onClose={closeToast} />
     </DashboardLayout>
   );
 };

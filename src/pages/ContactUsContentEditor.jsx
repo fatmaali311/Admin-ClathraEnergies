@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import DashboardLayout from '../layout/DashboardLayout';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import Toast from '../components/ui/Toast';
 import SidebarNavigation from '../components/layout/SidebarNavigation';
 import Button from '../components/ui/Button';
 import usePageForm from '../hooks/usePageForm';
@@ -13,6 +12,9 @@ import Card from '../components/ui/Card';
 import ContactTable from '../components/contact/ContactTable';
 import { useContacts } from '../hooks/useContacts';
 import { useAuth } from '../contexts/AuthContext';
+import LocalizedInput from '../components/ui/LocalizedInput';
+import LocalizedTextArea from '../components/ui/LocalizedTextArea';
+import { PRIMARY_COLOR } from '../components/Common/styles';
 
 const SECTIONS = [
     { id: 'hero-section', title: 'Hero Banner' },
@@ -22,34 +24,26 @@ const SECTIONS = [
     { id: 'submissions', title: 'Submissions' },
 ];
 
-const PRIMARY_COLOR = '#ADD0B3';
-
-const MenuItemEditor = ({ index, item, basePath, onChange, onRemove }) => {
-    const handleInput = (e) => {
-        onChange(basePath, index, e.target.name.split('.').pop(), e.target.value);
-    };
-
-    return (
-        <div className="flex items-end space-x-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-            <div className="flex-1">
-                <InputGroup
-                    title={`Menu Item #${index + 1}`}
-                    name="value"
-                    value={item.value || ''}
-                    onChange={handleInput}
-                />
-            </div>
-            <Button
-                type="button"
-                onClick={() => onRemove(basePath, index)}
-                className="bg-red-500 hover:bg-red-600 focus:ring-[#ADD0B3] py-3 px-4 h-full"
-            >
-                Remove
-            </Button>
+const MenuItemEditor = ({ index, item, basePath, onChange, onRemove }) => (
+    <div className="flex items-center gap-3">
+        <div className="flex-1">
+            <LocalizedInput
+                label={`Option ${index + 1}`}
+                name={`${basePath}.${index}.value`}
+                value={item.value}
+                onChange={(e) => onChange(basePath, index, 'value', e.target.value)}
+                className="mb-0" // Remove bottom margin since it's in a flex row
+            />
         </div>
-    );
-};
-
+        <Button
+            type="button"
+            onClick={() => onRemove(basePath, index)}
+            className="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded-lg mt-6" // mt-6 to align with input field
+        >
+            Remove
+        </Button>
+    </div>
+);
 
 const ContactUsContentEditor = () => {
     const { pageTitle } = useParams();
@@ -67,15 +61,13 @@ const ContactUsContentEditor = () => {
         handleAddItem,
         handleRemoveItem,
         handleSubmit,
-        toast,
-        closeToast
     } = form;
-    const { token } = useAuth();
+    const { token } = useAuth(); // Can also be removed if not used elsewhere, but harmless to keep
 
     // Submissions filter state (all | read | unread)
-    const [subFilter, setSubFilter] = React.useState('all');
-    const readFilterValue = subFilter === 'read' ? 'read' : subFilter === 'unread' ? 'unread' : undefined;
-    const { contacts, loading: contactsLoading, refetchContacts } = useContacts(token, 1, 20, readFilterValue);
+    // Submissions filter state is managed by useResource internal state
+    const { resource } = useContacts({ page: 1, limit: 20 });
+
 
     const scrollToSection = (id) => {
         const element = document.getElementById(id);
@@ -102,78 +94,72 @@ const ContactUsContentEditor = () => {
                             handleFileChange={handleFileChange}
                             accept="image/*"
                         />
-                        <InputGroup
-                            title="Title"
+                        <LocalizedInput
+                            label="Title"
                             name="hero_section.title"
-                            value={pageData.hero_section?.title || ''}
+                            value={pageData.hero_section?.title}
                             onChange={handleInputChange}
                             className="mt-6"
                         />
-                        <div>
-                            <label className="block text-md font-semibold text-gray-700 mb-1">Subtitle / Summary</label>
-                            <textarea
-                                name="hero_section.sub_title"
-                                value={pageData.hero_section?.sub_title || ''}
-                                onChange={handleInputChange}
-                                rows="4"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-[#ADD0B3] focus:border-[#ADD0B3] text-lg"
-                            />
-                        </div>
+                        <LocalizedTextArea
+                            label="Subtitle / Summary"
+                            name="hero_section.sub_title"
+                            value={pageData.hero_section?.sub_title}
+                            onChange={handleInputChange}
+                            rows={4}
+                        />
                     </Card>
                 );
             case 'paragraph-section':
                 return (
                     <Card title="Paragraph" color={PRIMARY_COLOR} id="paragraph-section" className={activeSection === 'paragraph-section' ? `ring-4 ring-opacity-50 ring-[#ADD0B3]/50` : ''}>
-                        <div>
-                            <label className="block text-md font-semibold text-gray-700 mb-1">Paragraph</label>
-                            <textarea
-                                name="paragraph"
-                                value={pageData.paragraph || ''}
-                                onChange={handleInputChange}
-                                rows="6"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-[#ADD0B3] focus:border-[#ADD0B3] text-lg"
-                            />
-                        </div>
+                        <LocalizedTextArea
+                            label="Paragraph"
+                            name="paragraph"
+                            value={pageData.paragraph}
+                            onChange={handleInputChange}
+                            rows={6}
+                        />
                     </Card>
                 );
             case 'submissions':
                 return (
                     <Card title="Contact Submissions" color={PRIMARY_COLOR} id="submissions" className={activeSection === 'submissions' ? `ring-4 ring-opacity-50 ring-[#ADD0B3]/50` : ''}>
                         <div className="mb-4 flex items-center gap-3">
-                            <button type="button" className={`px-4 py-2 rounded-full ${subFilter === 'all' ? 'bg-[#ADD0B3] text-white' : 'bg-gray-100 text-gray-700'}`} onClick={() => setSubFilter('all')}>All</button>
-                            <button type="button" className={`px-4 py-2 rounded-full ${subFilter === 'read' ? 'bg-[#ADD0B3] text-white' : 'bg-gray-100 text-gray-700'}`} onClick={() => setSubFilter('read')}>Read</button>
-                            <button type="button" className={`px-4 py-2 rounded-full ${subFilter === 'unread' ? 'bg-[#ADD0B3] text-white' : 'bg-gray-100 text-gray-700'}`} onClick={() => setSubFilter('unread')}>Unread</button>
+                            <button type="button" className={`px-4 py-2 rounded-full ${resource.filters?.isRead === undefined ? 'bg-[#ADD0B3] text-white' : 'bg-gray-100 text-gray-700'}`} onClick={() => resource.setFilter('isRead', undefined)}>All</button>
+                            <button type="button" className={`px-4 py-2 rounded-full ${resource.filters?.isRead === true ? 'bg-[#ADD0B3] text-white' : 'bg-gray-100 text-gray-700'}`} onClick={() => resource.setFilter('isRead', true)}>Read</button>
+                            <button type="button" className={`px-4 py-2 rounded-full ${resource.filters?.isRead === false ? 'bg-[#ADD0B3] text-white' : 'bg-gray-100 text-gray-700'}`} onClick={() => resource.setFilter('isRead', false)}>Unread</button>
                         </div>
-                        <ContactTable contacts={contacts} loading={contactsLoading} refetchContacts={refetchContacts} />
+                        <ContactTable resource={resource} />
                     </Card>
                 );
             case 'form-section':
                 return (
                     <Card title="Contact Form" color={PRIMARY_COLOR} id="form-section" className={activeSection === 'form-section' ? `ring-4 ring-opacity-50 ring-[#ADD0B3]/50` : ''}>
-                        <InputGroup
-                            title="Full Name Field Title"
+                        <LocalizedInput
+                            label="Full Name Field Title"
                             name="form_section.full_name_title"
-                            value={pageData.form_section?.full_name_title || ''}
+                            value={pageData.form_section?.full_name_title}
                             onChange={handleInputChange}
                         />
-                        <InputGroup
-                            title="Organization Field Title"
+                        <LocalizedInput
+                            label="Organization Field Title"
                             name="form_section.organization_title"
-                            value={pageData.form_section?.organization_title || ''}
+                            value={pageData.form_section?.organization_title}
                             onChange={handleInputChange}
                         />
-                        <InputGroup
-                            title="Email Field Title"
+                        <LocalizedInput
+                            label="Email Field Title"
                             name="form_section.email_title"
-                            value={pageData.form_section?.email_title || ''}
+                            value={pageData.form_section?.email_title}
                             onChange={handleInputChange}
                         />
                         <div className="mt-6">
                             <h3 className="text-lg font-semibold text-gray-700 mb-3">Area of Interest</h3>
-                            <InputGroup
-                                title="Field Title"
+                            <LocalizedInput
+                                label="Field Title"
                                 name="form_section.area_of_interest.field_title"
-                                value={pageData.form_section?.area_of_interest?.field_title || ''}
+                                value={pageData.form_section?.area_of_interest?.field_title}
                                 onChange={handleInputChange}
                             />
                             <div className="space-y-4 mt-4">
@@ -189,7 +175,7 @@ const ContactUsContentEditor = () => {
                                 ))}
                                 <Button
                                     type="button"
-                                    onClick={() => handleAddItem('form_section.area_of_interest.field_menu_points', { value: 'New Option' })}
+                                    onClick={() => handleAddItem('form_section.area_of_interest.field_menu_points', { value: { en: 'New Option', fr: '', zh: '' } })} // Initialize with object
                                     className="mt-4 bg-[#ADD0B3] hover:bg-[#388E3C] focus:ring-[#388E3C] w-full"
                                 >
                                     + Add Menu Item
@@ -198,10 +184,10 @@ const ContactUsContentEditor = () => {
                         </div>
                         <div className="mt-6">
                             <h3 className="text-lg font-semibold text-gray-700 mb-3">I Represent Field</h3>
-                            <InputGroup
-                                title="Field Title"
+                            <LocalizedInput
+                                label="Field Title"
                                 name="form_section.i_represent_field.field_title"
-                                value={pageData.form_section?.i_represent_field?.field_title || ''}
+                                value={pageData.form_section?.i_represent_field?.field_title}
                                 onChange={handleInputChange}
                             />
                             <div className="space-y-4 mt-4">
@@ -217,24 +203,24 @@ const ContactUsContentEditor = () => {
                                 ))}
                                 <Button
                                     type="button"
-                                    onClick={() => handleAddItem('form_section.i_represent_field.field_menu_points', { value: 'New Option' })}
+                                    onClick={() => handleAddItem('form_section.i_represent_field.field_menu_points', { value: { en: 'New Option', fr: '', zh: '' } })}
                                     className="mt-4 bg-[#ADD0B3] hover:bg-[#388E3C] focus:ring-[#388E3C] w-full"
                                 >
                                     + Add Menu Item
                                 </Button>
                             </div>
                         </div>
-                        <InputGroup
-                            title="Message Field Title"
+                        <LocalizedInput
+                            label="Message Field Title"
                             name="form_section.message_title"
-                            value={pageData.form_section?.message_title || ''}
+                            value={pageData.form_section?.message_title}
                             onChange={handleInputChange}
                             className="mt-6"
                         />
-                        <InputGroup
-                            title="Submit Button Title"
+                        <LocalizedInput
+                            label="Submit Button Title"
                             name="form_section.submit_button_title"
-                            value={pageData.form_section?.submit_button_title || ''}
+                            value={pageData.form_section?.submit_button_title}
                             onChange={handleInputChange}
                         />
                     </Card>
@@ -253,7 +239,7 @@ const ContactUsContentEditor = () => {
             default:
                 return null;
         }
-    }, [activeSection, pageData, newFiles, imageUrls, handleInputChange, handleFileChange, handleArrayItemChange, handleAddItem, handleRemoveItem, contacts, contactsLoading, refetchContacts, subFilter]);
+    }, [activeSection, pageData, newFiles, imageUrls, handleInputChange, handleFileChange, handleArrayItemChange, handleAddItem, handleRemoveItem, resource]);
 
     if (isLoading || !pageData) {
         return (
@@ -306,11 +292,6 @@ const ContactUsContentEditor = () => {
                     </div>
                 </form>
             </div>
-            <Toast
-                message={toast.message}
-                type={toast.type}
-                onClose={closeToast}
-            />
         </DashboardLayout>
     );
 };

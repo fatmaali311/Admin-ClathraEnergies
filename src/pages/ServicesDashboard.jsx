@@ -4,49 +4,33 @@ import { useServices } from "../hooks/useServices";
 import ServicesTable from "../components/services/ServicesTable";
 import ServiceForm from "../components/services/ServiceForm";
 import ServiceDetailsModal from "../components/services/ServiceDetailsModal";
-import { Box, Typography, Button, Pagination, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
-import { Add as AddIcon, Refresh as RefreshIcon, DeleteForever as DeleteForeverIcon } from "@mui/icons-material";
+import { Box, Typography, Button, CircularProgress } from "@mui/material";
+import { Add as AddIcon } from "@mui/icons-material";
 
 // --- Constants ---
 const PRIMARY_COLOR = "#ADD0B3";
 const HOVER_COLOR = "#8CB190";
 
 export default function ServicesDashboard() {
-  const { token, loading: authLoading, user } = useAuth();
-  
-  const { 
-    services, 
-    loading: servicesLoading, 
-    error: servicesError, 
-    fetchServices, 
-    removeService, 
-    pagination 
-  } = useServices(); 
+  const { token, loading: authLoading } = useAuth();
+
+  // Use autonomous pagination
+  const { resource, removeService, fetchServices, pagination } = useServices();
 
   const [view, setView] = useState('table');
-  const [currentPage, setCurrentPage] = useState(1);
   const [currentService, setCurrentService] = useState(null);
-  const [deleteConfirm, setDeleteConfirm] = useState(null);
-
-  useEffect(() => {
-    if (token) {
-      fetchServices(currentPage, 10);
-    }
-  }, [token, currentPage, fetchServices]);
 
   const handleViewDetails = (service) => setCurrentService(service);
   const handleEdit = (service) => {
     setCurrentService(service);
     setView('form');
   };
-  const handleDeleteAttempt = (serviceTitle) => setDeleteConfirm(serviceTitle);
-  const handleConfirmDelete = async () => {
-    if (deleteConfirm) {
-      await removeService(deleteConfirm);
-      setDeleteConfirm(null);
-      fetchServices(currentPage, 10);
-    }
+
+  const handleDeleteService = async (serviceTitle) => {
+    await removeService(serviceTitle);
+    // fetchServices(); // Handled internally by removeService -> refresh()
   };
+
   const handleCreateNew = () => {
     setCurrentService(null);
     setView('form');
@@ -54,7 +38,7 @@ export default function ServicesDashboard() {
   const handleFormClose = () => {
     setCurrentService(null);
     setView('table');
-    fetchServices(currentPage, 10);
+    fetchServices();
   };
 
   if (authLoading) {
@@ -80,9 +64,9 @@ export default function ServicesDashboard() {
 
   if (view === 'form') {
     return (
-      <ServiceForm 
-        service={currentService} 
-        onClose={handleFormClose} 
+      <ServiceForm
+        service={currentService}
+        onClose={handleFormClose}
       />
     );
   }
@@ -108,96 +92,21 @@ export default function ServicesDashboard() {
             ({pagination.total || 0} services found)
           </Typography>
         </Box>
-        <Button
-          onClick={handleCreateNew}
-          variant="contained"
-          size="large"
-          startIcon={<AddIcon />}
-          sx={{ 
-            backgroundColor: PRIMARY_COLOR, 
-            "&:hover": { backgroundColor: HOVER_COLOR },
-            borderRadius: '9999px',
-            px: 4,
-            py: 1.5,
-            fontWeight: 'bold',
-          }}
-        >
-          Create New
-        </Button>
       </Box>
-      
-      <ServicesTable 
-        services={services} 
-        loading={servicesLoading} 
+
+      <ServicesTable
+        resource={resource}
         onView={handleViewDetails}
         onEdit={handleEdit}
-        onDelete={handleDeleteAttempt}
-        onRefresh={() => fetchServices(currentPage, 10)}
-        error={servicesError}
+        onDelete={handleDeleteService}
+        onAdd={handleCreateNew}
       />
 
-      {!servicesLoading && pagination.totalPages > 1 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
-          <Pagination
-            count={pagination.totalPages || 0}
-            page={currentPage}
-            onChange={(e, value) => setCurrentPage(value)}
-            color="primary"
-            disabled={servicesLoading}
-            sx={{
-              "& .MuiPaginationItem-root": {
-                "&.Mui-selected": {
-                  backgroundColor: PRIMARY_COLOR,
-                  color: "white",
-                  "&:hover": { backgroundColor: HOVER_COLOR },
-                },
-              },
-            }}
-          />
-        </Box>
-      )}
-
-      <ServiceDetailsModal 
-        service={currentService} 
-        onClose={() => setCurrentService(null)} 
+      <ServiceDetailsModal
+        service={currentService}
+        onClose={() => setCurrentService(null)}
         primaryColor={PRIMARY_COLOR}
       />
-      
-      <Dialog
-        open={!!deleteConfirm}
-        onClose={() => setDeleteConfirm(null)}
-        PaperProps={{ sx: { borderRadius: '16px', p: 2 } }}
-      >
-        <DialogTitle sx={{ bgcolor: 'red.500', color: 'white', textAlign: 'center', fontWeight: 'bold' }}>
-          <DeleteForeverIcon sx={{ mr: 1, verticalAlign: 'middle' }} /> Confirm Deletion
-        </DialogTitle>
-        <DialogContent sx={{ p: 6, textAlign: 'center' }}>
-          <Typography variant="body1">
-            Are you sure you want to delete this service? This action cannot be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ justifyContent: 'center', p: 3 }}>
-          <Button 
-            onClick={() => setDeleteConfirm(null)} 
-            variant="outlined" 
-            sx={{ color: 'gray.600', borderColor: 'gray.300', mr: 2 }}
-          >
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleConfirmDelete} 
-            variant="contained" 
-            sx={{ 
-              backgroundColor: 'red.600', 
-              "&:hover": { backgroundColor: 'red.700' },
-              px: 4,
-            }}
-            startIcon={<DeleteForeverIcon />}
-          >
-            Delete Permanently
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 }

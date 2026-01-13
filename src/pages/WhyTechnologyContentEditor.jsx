@@ -1,9 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import DashboardLayout from '../layout/DashboardLayout';
-import Alert from '../components/ui/Alert';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import Toast from '../components/ui/Toast';
 import SidebarNavigation from '../components/layout/SidebarNavigation';
 import Button from '../components/ui/Button';
 import usePageForm from '../hooks/usePageForm';
@@ -11,13 +9,13 @@ import WhyHeroSectionEditor from '../components/pageEditors/why/WhyHeroSectionEd
 import WhyStepsSectionEditor from '../components/pageEditors/why/WhyStepsSectionEditor';
 
 
+import { PRIMARY_COLOR } from '../components/Common/styles';
+
 const SECTIONS = [
     { id: 'hero-section', title: 'Hero Banner' },
     { id: 'steps-section', title: 'Stats & Info Sections' },
-   
-];
 
-const PRIMARY_COLOR = '#ADD0B3';
+];
 
 const WhyTechnologyContentEditor = () => {
     const { pageTitle } = useParams();
@@ -28,8 +26,6 @@ const WhyTechnologyContentEditor = () => {
         isLoading,
         isSubmitting,
         handleSubmit,
-        toast,
-        closeToast
     } = form;
 
     const scrollToSection = (id) => {
@@ -48,7 +44,7 @@ const WhyTechnologyContentEditor = () => {
                 return <WhyHeroSectionEditor {...props} />;
             case 'steps-section':
                 return <WhyStepsSectionEditor {...props} />;
-           
+
             default:
                 return null;
         }
@@ -73,16 +69,7 @@ const WhyTechnologyContentEditor = () => {
                 >
                     Why Technology Page Content Editor
                 </h1>
-                <div className="mb-6 max-w-4xl mx-auto">
-                    {toast.message && (
-                        <Alert
-                            show={true}
-                            type={toast.type}
-                            message={toast.message}
-                            onClose={closeToast}
-                        />
-                    )}
-                </div>
+
                 <form onSubmit={handleSubmit} className="grid grid-cols-12 gap-8">
                     <div className="col-span-12">
                         <SidebarNavigation
@@ -112,11 +99,6 @@ const WhyTechnologyContentEditor = () => {
                     </div>
                 </form>
             </div>
-            <Toast
-                message={toast.message}
-                type={toast.type}
-                onClose={closeToast}
-            />
         </DashboardLayout>
     );
 };

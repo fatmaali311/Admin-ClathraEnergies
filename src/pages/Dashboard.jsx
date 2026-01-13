@@ -32,7 +32,7 @@ const StatCard = ({ title, value, sub, color = '#ADD0B3', link, icon: Icon }) =>
 );
 
 const Dashboard = () => {
-  const { user, token, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   // Helper to get a friendly display name from the user object
   const getDisplayName = (u) => {
     if (!u) return null;
@@ -46,12 +46,11 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      if (!token) return;
       setLoading(true);
       try {
         const [cStat, aStat] = await Promise.all([
-          getContactStatistics(token),
-          getApplicationsStatistics(token),
+          getContactStatistics(),
+          getApplicationsStatistics(),
         ]);
         setContactsStats(cStat);
         setAppsStats(aStat);
@@ -63,7 +62,8 @@ const Dashboard = () => {
       }
     };
     fetchStats();
-  }, [token]);
+  }, []);
+
 
   return (
     <DashboardLayout>
@@ -86,9 +86,8 @@ const Dashboard = () => {
           sub={
             loading
               ? ''
-              : `Unread: ${contactsStats?.summary?.unreadCount || 0} • Read: ${contactsStats?.summary?.readCount || 0}${
-                  displayName ? ` • Managed by ${displayName}` : ''
-                }`
+              : `Unread: ${contactsStats?.summary?.unreadCount || 0} • Read: ${contactsStats?.summary?.readCount || 0}${displayName ? ` • Managed by ${displayName}` : ''
+              }`
           }
           color="#ADD0B3"
           link="/dashboard/content/contact-us"

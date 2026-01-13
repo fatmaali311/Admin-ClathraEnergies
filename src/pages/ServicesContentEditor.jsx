@@ -2,24 +2,23 @@ import React, { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import ServicesDashboard from './ServicesDashboard';
 import DashboardLayout from '../layout/DashboardLayout';
-import Alert from '../components/ui/Alert';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import Toast from '../components/ui/Toast';
 import SidebarNavigation from '../components/layout/SidebarNavigation';
 import Button from '../components/ui/Button';
 import usePageForm from '../hooks/usePageForm';
 import MediaUpload from '../components/ui/MediaUpload';
 import { getAdminImageUrl } from '../lib/mediaUtils';
-import InputGroup from '../components/ui/InputGroup';
 import Card from '../components/ui/Card';
 import LinkEditor from '../components/pageEditors/LinkEditor';
+import LocalizedInput from '../components/ui/LocalizedInput';
+import LocalizedTextArea from '../components/ui/LocalizedTextArea';
+
+import { PRIMARY_COLOR } from '../components/Common/styles';
 
 const SECTIONS = [
     { id: 'hero-section', title: 'Hero Banner' },
     { id: 'services-dashboard', title: 'Services' },
 ];
-
-const PRIMARY_COLOR = '#ADD0B3';
 
 const ServicesContentEditor = () => {
     const { pageTitle } = useParams();
@@ -34,8 +33,6 @@ const ServicesContentEditor = () => {
         handleInputChange,
         handleFileChange,
         handleSubmit,
-        toast,
-        closeToast,
     } = form;
 
 
@@ -75,24 +72,20 @@ const ServicesContentEditor = () => {
                     handleFileChange={handleFileChange}
                     accept="image/*"
                 />
-                <InputGroup
-                    title="Title"
+                <LocalizedInput
+                    label="Title"
                     name="hero_section.title"
-                    value={pageData.hero_section?.title || ''}
+                    value={pageData.hero_section?.title}
                     onChange={handleInputChange}
                     className="mt-6"
                 />
-                <div>
-                    <label className="block text-md font-semibold text-gray-700 mb-1">Subtitle / Summary</label>
-                    <textarea
-                        name="hero_section.sub_title"
-                        value={pageData.hero_section?.sub_title || ''}
-                        onChange={handleInputChange}
-                        rows="4"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-[#ADD0B3] focus:border-[#ADD0B3] text-lg"
-                    />
-                </div>
-               
+                <LocalizedTextArea
+                    label="Subtitle / Summary"
+                    name="hero_section.sub_title"
+                    value={pageData.hero_section?.sub_title}
+                    onChange={handleInputChange}
+                />
+
             </Card>
         );
     }, [activeSection, pageData, newFiles, imageUrls, handleInputChange, handleFileChange]);
@@ -116,16 +109,7 @@ const ServicesContentEditor = () => {
                 >
                     Services Page Content Editor
                 </h1>
-                <div className="mb-6 max-w-4xl mx-auto">
-                    {toast.message && (
-                        <Alert
-                            show={true}
-                            type={toast.type}
-                            message={toast.message}
-                            onClose={closeToast}
-                        />
-                    )}
-                </div>
+
                 <form onSubmit={handleSubmit} className="grid grid-cols-12 gap-8">
                     <div className="col-span-12">
                         <SidebarNavigation
@@ -157,11 +141,6 @@ const ServicesContentEditor = () => {
                     </div>
                 </form>
             </div>
-            <Toast
-                message={toast.message}
-                type={toast.type}
-                onClose={closeToast}
-            />
         </DashboardLayout>
     );
 };

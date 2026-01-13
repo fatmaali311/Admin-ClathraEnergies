@@ -1,62 +1,59 @@
 import React from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, IconButton, Box } from '@mui/material';
-import { DeleteForever, Close as CloseIcon } from '@mui/icons-material';
+import { Typography } from '@mui/material';
+import { DeleteForever } from '@mui/icons-material';
+import ReusableModal, { ModalButton } from '../ui/ReusableModal';
+import { PRIMARY_COLOR } from '../Common/styles';
 
-const PRIMARY_COLOR = "#ADD0B3";
-const DANGER_COLOR = "#DC2626"; 
+const DANGER_COLOR = "#DC2626";
 
 export default function ConfirmDeleteModal({ open, onClose, onConfirm, itemType, itemName, isDeleting }) {
+  const actions = (
+    <>
+      <ModalButton
+        onClick={() => onClose(false)}
+        variant="outlined"
+        disabled={isDeleting}
+        color="secondary"
+      >
+        Cancel
+      </ModalButton>
+      <ModalButton
+        onClick={onConfirm}
+        variant="contained"
+        color="error" // Mui color prop but we override style
+        startIcon={<DeleteForever />}
+        disabled={isDeleting}
+        sx={{
+          bgcolor: DANGER_COLOR,
+          '&:hover': { bgcolor: '#B91C1C' },
+        }}
+      >
+        {isDeleting ? 'Deleting...' : `Delete ${itemType}`}
+      </ModalButton>
+    </>
+  );
+
   return (
-    <Dialog open={open} onClose={() => onClose(false)} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ 
-          backgroundColor: DANGER_COLOR, 
-          color: 'white', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center' 
-      }}>
-        <Box display="flex" alignItems="center" gap={1}>
-            <DeleteForever />
-            Confirm Deletion
-        </Box>
-        <IconButton onClick={() => onClose(false)} sx={{ color: 'white' }}>
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-      
-      <DialogContent sx={{ p: 4, textAlign: 'center' }}>
+    <ReusableModal
+      open={open}
+      onClose={() => onClose(false)}
+      maxWidth="sm"
+      title={
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <DeleteForever />
+          Confirm Deletion
+        </div>
+      }
+      actions={actions}
+    >
+      <div style={{ textAlign: 'center', padding: '16px' }}>
         <Typography variant="h6" component="p" gutterBottom>
           Are you absolutely sure you want to delete this {itemType}?
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
           **{itemName}** will be permanently removed. This action cannot be undone.
         </Typography>
-      </DialogContent>
-      
-      <DialogActions sx={{ p: 3, justifyContent: 'center' }}>
-        <Button 
-          onClick={() => onClose(false)} 
-          variant="outlined" 
-          disabled={isDeleting}
-          sx={{ color: PRIMARY_COLOR, borderColor: PRIMARY_COLOR }}
-        >
-          Cancel
-        </Button>
-        <Button 
-          onClick={onConfirm} 
-          variant="contained" 
-          color="error" 
-          startIcon={<DeleteForever />}
-          disabled={isDeleting}
-          sx={{ 
-            backgroundColor: DANGER_COLOR, 
-            '&:hover': { backgroundColor: '#B91C1C' },
-            position: 'relative'
-          }}
-        >
-          {isDeleting ? 'Deleting...' : `Delete ${itemType}`}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </div>
+    </ReusableModal>
   );
 }

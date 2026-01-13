@@ -1,108 +1,109 @@
 import React from 'react';
 import { getAdminImageUrl } from '../../lib/mediaUtils';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Box,
-  Typography,
-  IconButton,
-  Chip,
-} from '@mui/material';
-import { Close as CloseIcon, MiscellaneousServices as ServiceIcon } from '@mui/icons-material';
+import { Box, Typography, Grid, Chip } from '@mui/material';
+import { MiscellaneousServices as ServiceIcon, Info as InfoIcon, Image as ImageIcon } from '@mui/icons-material';
+import ReusableModal, { ModalButton } from '../ui/ReusableModal';
+import { PRIMARY_COLOR } from '../Common/styles';
+import { getLocalizedValue } from '../../lib/apiUtils';
 
-const PRIMARY_COLOR = '#ADD0B3';
-const HOVER_COLOR = '#8CB190';
+// --- Shared Sub-components ---
 
-// Reusable Row Component
-const DetailRow = ({ label, value, isFullWidth = false, isContent = false }) => (
+const SectionHeader = ({ icon: Icon, title }) => (
+  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, pb: 1, borderBottom: '2px solid #f0f0f0' }}>
+    {Icon && <Icon sx={{ color: PRIMARY_COLOR, mr: 1 }} />}
+    <Typography variant="h6" sx={{ color: PRIMARY_COLOR, fontWeight: 600 }}>
+      {title}
+    </Typography>
+  </Box>
+);
+
+const DetailRow = ({ label, value, isFullWidth = false, isCode = false }) => (
   <Box
     sx={{
       display: 'flex',
-      flexDirection: isFullWidth || isContent ? 'column' : 'row',
+      flexDirection: isFullWidth ? 'column' : 'row',
       justifyContent: isFullWidth ? 'flex-start' : 'space-between',
       py: 1.5,
-      borderBottom: '1px solid #eee',
+      borderBottom: '1px border-style: dashed #eee',
+      '&:last-child': { borderBottom: 'none' }
     }}
   >
-    <Typography variant="body1" sx={{ fontWeight: 'bold', color: PRIMARY_COLOR, minWidth: '150px' }}>
+    <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'text.secondary', minWidth: '140px' }}>
       {label}:
     </Typography>
     <Typography
-      variant="body1"
+      variant="body2"
+      component="div"
       sx={{
-        color: '#4A4A4A',
-        mt: isFullWidth || isContent ? 1 : 0,
-        whiteSpace: isContent ? 'pre-wrap' : 'normal',
+        color: 'text.primary',
+        mt: isFullWidth ? 1 : 0,
+        whiteSpace: isCode ? 'pre-wrap' : 'normal',
+        fontFamily: isCode ? 'monospace' : 'inherit',
+        textAlign: isFullWidth ? 'left' : 'right',
+        wordBreak: 'break-word'
       }}
     >
-      {value || 'N/A'}
+      {value || <span style={{ color: '#ccc', fontStyle: 'italic' }}>N/A</span>}
     </Typography>
   </Box>
 );
 
-// Button Info Section
-const ButtonDetails = ({ button, label }) => (
-  <Box
-    sx={{
-      p: 2,
-      mb: 2,
-      bgcolor: '#F7F7F7',
-      borderRadius: '8px',
-      border: '1px solid #E0E0E0',
-    }}
-  >
-    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: PRIMARY_COLOR, mb: 1 }}>
-      {label}
-    </Typography>
-    <Typography variant="body2">
-      <strong>Name:</strong> {button?.name || 'N/A'}
-    </Typography>
-    <Typography variant="body2">
-      <strong>Link:</strong> {button?.link || 'N/A'}
-    </Typography>
-  </Box>
-);
-
-// Image Section
-const ImagesSection = ({ images }) => (
-  <Box sx={{ mt: 2 }}>
-    <Typography variant="h6" sx={{ color: PRIMARY_COLOR, mb: 2 }}>
-      Images
-    </Typography>
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-      {Object.entries(images || {}).map(([key, url]) =>
-        url ? (
-          <Box key={key} sx={{ textAlign: 'center', width: { xs: '100%', sm: '200px' } }}>
-            <img
-              src={getAdminImageUrl(url)}
-              alt={key}
-              style={{
-                width: '100%',
-                height: '150px',
-                objectFit: 'cover',
-                borderRadius: '8px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              }}
-            />
-            <Typography variant="caption" sx={{ display: 'block', mt: 1, color: '#666' }}>
-              {key}
-            </Typography>
-          </Box>
-        ) : null
-      )}
-      {Object.keys(images || {}).length === 0 && (
-        <Typography variant="body2" color="text.secondary">
-          No images available
-        </Typography>
-      )}
+const ButtonDetails = ({ button }) => {
+  if (!button) return <Typography variant="body2" color="text.secondary">No button configured</Typography>;
+  return (
+    <Box sx={{ p: 2, bgcolor: '#fafafa', borderRadius: 2, border: '1px solid #eee' }}>
+      <Grid container spacing={2}>
+        <Grid item xs={6}>
+          <Typography variant="caption" color="text.secondary">Label</Typography>
+          <Typography variant="body2" fontWeight="bold">{getLocalizedValue(button.name) || 'N/A'}</Typography>
+        </Grid>
+        <Grid item xs={6}>
+          <Typography variant="caption" color="text.secondary">Link</Typography>
+          <Typography variant="body2" color="primary">{button.link || 'N/A'}</Typography>
+        </Grid>
+      </Grid>
     </Box>
-  </Box>
-);
+  );
+};
 
-// Main Component
+const ImagesSection = ({ images }) => {
+  const imageEntries = Object.entries(images || {});
+  if (imageEntries.length === 0) {
+    return <Typography variant="body2" color="text.secondary" fontStyle="italic">No images available</Typography>;
+  }
+
+  return (
+    <Grid container spacing={2}>
+      {imageEntries.map(([key, url]) => (
+        url ? (
+          <Grid item xs={12} sm={6} md={4} key={key}>
+            <Box sx={{
+              borderRadius: 2,
+              overflow: 'hidden',
+              boxShadow: 2,
+              transition: 'transform 0.2s',
+              '&:hover': { transform: 'scale(1.02)' }
+            }}>
+              <img
+                src={getAdminImageUrl(url)}
+                alt={key}
+                style={{ width: '100%', height: '140px', objectFit: 'cover' }}
+              />
+              <Box sx={{ p: 1, bgcolor: '#fff', textAlign: 'center' }}>
+                <Typography variant="caption" sx={{ fontWeight: 'bold', textTransform: 'capitalize' }}>
+                  {key.replace(/-/g, ' ')}
+                </Typography>
+              </Box>
+            </Box>
+          </Grid>
+        ) : null
+      ))}
+    </Grid>
+  );
+};
+
+// --- Main Component ---
+
 export default function ServiceDetailsModal({ service, onClose }) {
   if (!service) return null;
 
@@ -112,157 +113,109 @@ export default function ServiceDetailsModal({ service, onClose }) {
     _id
   } = service;
 
-  const { main_color, sub_title, paragraph, details, main_button} = serviceObj || {};
+  const { main_color, sub_title, paragraph, details, main_button } = serviceObj || {};
+
 
   return (
-    <Dialog
+    <ReusableModal
       open={!!service}
       onClose={onClose}
       fullWidth
       maxWidth="md"
-      PaperProps={{
-        sx: {
-          borderTop: `4px solid ${PRIMARY_COLOR}`,
-          borderRadius: '12px',
-        },
-      }}
+      title={
+        <Box display="flex" alignItems="center" gap={1.5}>
+          <ServiceIcon sx={{ color: PRIMARY_COLOR }} />
+          <Typography variant="h6" fontWeight="bold" color="text.primary">
+            {getLocalizedValue(title)}
+          </Typography>
+          <Chip label="Service Details" size="small" variant="outlined" sx={{ ml: 1, borderColor: PRIMARY_COLOR, color: PRIMARY_COLOR }} />
+        </Box>
+      }
+      actions={
+        <ModalButton onClick={onClose} variant="contained" color="primary">
+          Close
+        </ModalButton>
+      }
     >
-      {/* Header */}
-      <DialogTitle
-        sx={{
-          backgroundColor: PRIMARY_COLOR,
-          color: 'white',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <Box display="flex" alignItems="center" gap={1}>
-          <ServiceIcon />
-          <Typography variant="h5" fontWeight="bold">
-            {title}
-          </Typography>
-        </Box>
-        <IconButton onClick={onClose} size="medium" sx={{ color: 'white' }}>
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+      <Box display="flex" flexDirection="column" gap={3}>
 
-      {/* Body */}
-      <DialogContent dividers sx={{ backgroundColor: '#F9F9F9', p: 4 }}>
         {/* Basic Info */}
-        <Box sx={{ bgcolor: 'white', p: 4, borderRadius: '12px', boxShadow: 3 }}>
-          <Typography
-            variant="h6"
-            sx={{
-              color: PRIMARY_COLOR,
-              mb: 2,
-              borderBottom: '2px solid #eee',
-              pb: 1,
-            }}
-          >
-            Basic Information
-          </Typography>
-          <DetailRow label="ID" value={_id} />
-          <DetailRow label="Title/Slug" value={title} />
-          <DetailRow label="Main Color" value={main_color} />
-          <DetailRow label="Sub Title" value={sub_title} />
-      
+        <Box>
+          <SectionHeader icon={InfoIcon} title="Basic Information" />
+          <Box sx={{ bgcolor: 'white', p: 2, borderRadius: 2, border: '1px solid #eee' }}>
+            <DetailRow label="Title / Slug" value={getLocalizedValue(title)} />
+            <DetailRow label="Sub Title" value={getLocalizedValue(sub_title)} />
+            <DetailRow label="Main Color" value={
+              main_color ? (
+                <Box component="span" display="flex" alignItems="center" gap={1} justifyContent="flex-end">
+                  <Box sx={{ width: 16, height: 16, bgcolor: main_color, borderRadius: 0.5, border: '1px solid #ccc' }} />
+                  {main_color}
+                </Box>
+              ) : null
+            } />
+          </Box>
         </Box>
 
-        {/* Paragraph */}
+        {/* Content */}
         {paragraph && (
-          <Box sx={{ mt: 3, bgcolor: 'white', p: 4, borderRadius: '12px', boxShadow: 3 }}>
-            <Typography
-              variant="h6"
-              sx={{ color: PRIMARY_COLOR, mb: 2, borderBottom: '2px solid #eee', pb: 1 }}
-            >
-              Main Paragraph
-            </Typography>
-            <DetailRow label="Content" value={paragraph} isFullWidth isContent />
+          <Box>
+            <Typography variant="h6" sx={{ color: PRIMARY_COLOR, mb: 1, fontSize: '1rem', fontWeight: 600 }}>Description</Typography>
+            <Box sx={{ p: 2, bgcolor: '#f9f9f9', borderRadius: 2, border: '1px solid #eee' }}>
+              <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-line' }}>
+                {getLocalizedValue(paragraph)}
+              </Typography>
+            </Box>
           </Box>
         )}
 
-        {/* Details Section */}
-        <Box sx={{ mt: 3, bgcolor: 'white', p: 4, borderRadius: '12px', boxShadow: 3 }}>
-          <Typography
-            variant="h6"
-            sx={{ color: PRIMARY_COLOR, mb: 2, borderBottom: '2px solid #eee', pb: 1 }}
-          >
-            Details Sections ({details?.length || 0})
-          </Typography>
-
+        {/* Details List */}
+        <Box>
+          <SectionHeader title={`Feature Details (${details?.length || 0})`} />
           {details?.length > 0 ? (
-            details.map((item, index) => (
-              <Box
-                key={index}
-                sx={{
-                  mb: 2,
-                  p: 2,
-                  bgcolor: '#F7F7F7',
-                  borderRadius: '8px',
-                  border: '1px solid #E0E0E0',
-                }}
-              >
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: PRIMARY_COLOR }}>
-                  Detail {index + 1}
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 0.5 }}>
-                  <strong>Title:</strong> {item.title || 'N/A'}
-                </Typography>
-                {item.icon && (
-                  <Typography variant="body2" sx={{ mt: 0.5 }}>
-                    <strong>Icon:</strong> {item.icon}
-                  </Typography>
-                )}
-                {Object.values(item.points || {}).map(
-                  (point, i) =>
-                    point && (
-                      <Typography key={i} variant="body2" sx={{ ml: 2, mt: 0.5 }}>
-                        • {point}
-                      </Typography>
-                    )
-                )}
-              </Box>
-            ))
+            <Grid container spacing={2}>
+              {details.map((item, index) => (
+                <Grid item xs={12} md={6} key={index}>
+                  <Box sx={{ p: 2, height: '100%', bgcolor: '#fff', border: '1px solid #e0e0e0', borderRadius: 2, boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                    <Typography variant="subtitle2" color="primary" gutterBottom>
+                      {getLocalizedValue(item.title) || `Detail #${index + 1}`}
+                    </Typography>
+
+                    {item.icon && (
+                      <Box display="flex" alignItems="center" gap={1} mb={1}>
+                        <Typography variant="caption" fontWeight="bold">Icon:</Typography>
+                        <Typography variant="caption" sx={{ fontFamily: 'monospace', bgcolor: '#eee', px: 0.5, borderRadius: 0.5 }}>{item.icon}</Typography>
+                      </Box>
+                    )}
+
+                    {Object.values(item.points || {}).some(p => p) && (
+                      <Box component="ul" sx={{ m: 0, pl: 2.5, typography: 'caption', color: 'text.secondary' }}>
+                        {Object.values(item.points || {}).map((point, i) => (
+                          point ? <li key={i}>{getLocalizedValue(point)}</li> : null
+                        ))}
+                      </Box>
+                    )}
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
           ) : (
-            <Typography variant="body2" color="text.secondary">
-              No details available
-            </Typography>
+            <Typography variant="body2" color="text.secondary" fontStyle="italic">No details sections.</Typography>
           )}
         </Box>
 
-        {/* Buttons */}
-        <Box sx={{ mt: 3, bgcolor: 'white', p: 4, borderRadius: '12px', boxShadow: 3 }}>
-          <Typography
-            variant="h6"
-            sx={{ color: PRIMARY_COLOR, mb: 2, borderBottom: '2px solid #eee', pb: 1 }}
-          >
-            Action Buttons
-          </Typography>
-          <ButtonDetails button={main_button} label="Main Service Button" />
+        {/* Action Button */}
+        <Box>
+          <SectionHeader title="Call to Action" />
+          <ButtonDetails button={main_button} />
         </Box>
 
         {/* Images */}
-        <Box sx={{ mt: 3, bgcolor: 'white', p: 4, borderRadius: '12px', boxShadow: 3 }}>
+        <Box>
+          <SectionHeader icon={ImageIcon} title="Gallery" />
           <ImagesSection images={images} />
         </Box>
-      </DialogContent>
 
-      {/* Footer */}
-      <DialogActions sx={{ p: 3, justifyContent: 'center', backgroundColor: 'white' }}>
-        <Button
-          onClick={onClose}
-          variant="contained"
-          size="large"
-          sx={{
-            backgroundColor: PRIMARY_COLOR,
-            '&:hover': { backgroundColor: HOVER_COLOR },
-          }}
-        >
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </Box>
+    </ReusableModal>
   );
 }

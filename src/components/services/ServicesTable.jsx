@@ -4,48 +4,49 @@ import {
   TableHead, TableRow, Paper, Box,
   IconButton, Button, Typography, CircularProgress
 } from "@mui/material";
-import { ManagedTable } from '../Common';
-import { Visibility, Edit, Delete, Refresh as RefreshIcon } from "@mui/icons-material";
+import ResourceTable from '../Common/ResourceTable';
+import { Visibility, Edit, Delete } from "@mui/icons-material";
 import { getAdminImageUrl } from '../../lib/mediaUtils';
-import { PRIMARY_COLOR, HOVER_COLOR } from '../Common/styles';
+import { PRIMARY_COLOR } from '../Common/styles';
 import ConfirmDialog from '../Common/ConfirmDialog';
 import { useState } from 'react';
+import { getLocalizedValue } from "../../lib/apiUtils";
 
 export default function ServicesTable({
-  services,
-  loading,
-  error,
+  resource,
   onView,
   onEdit,
   onDelete,
-  onRefresh
+  onAdd,
+  addLabel = "Create New Service"
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toDelete, setToDelete] = useState(null);
 
-  const handleDeleteClick = (title) => {
-    setToDelete(title);
+  const handleDeleteClick = (svc) => {
+    setToDelete(svc);
     setConfirmOpen(true);
   };
 
   const handleConfirmDelete = () => {
     setConfirmOpen(false);
-    if (toDelete) onDelete(toDelete);
+    if (toDelete) onDelete(toDelete.title);
     setToDelete(null);
   };
   const getServiceField = (service, path, defaultValue = 'N/A') => {
-    return path.split('.').reduce((obj, key) => (obj && obj[key] !== undefined) ? obj[key] : null, service) || defaultValue;
+    const val = path.split('.').reduce((obj, key) => (obj && obj[key] !== undefined) ? obj[key] : null, service);
+    return getLocalizedValue(val) || defaultValue;
   };
 
   const columns = [
-    { 
-      key: 'image', 
+    {
+      key: 'image',
       label: 'Image',
       render: (r) => {
         const imageUrl = getServiceField(r, 'data.images.service-image', '');
         return imageUrl ? (
           <div style={{ width: '60px', height: '60px', position: 'relative' }}>
-            <img 
+            <img
               src={getAdminImageUrl(imageUrl)}
               alt={`${r.title} service`}
               style={{
@@ -58,7 +59,7 @@ export default function ServicesTable({
             />
           </div>
         ) : (
-          <div 
+          <div
             style={{
               width: '60px',
               height: '60px',
@@ -77,25 +78,29 @@ export default function ServicesTable({
         );
       }
     },
-    { key: 'title', label: 'Title' },
-    { 
-      key: 'subtitle', 
-      label: 'Sub Title', 
+    {
+      key: 'title',
+      label: 'Title',
+      render: (r) => getLocalizedValue(r.title)
+    },
+    {
+      key: 'subtitle',
+      label: 'Sub Title',
       render: (r) => getServiceField(r, 'data.serviceObj.sub_title', 'N/A'),
       className: 'hide-xs-sm'
     },
-    { 
-      key: 'color', 
+    {
+      key: 'color',
       label: 'Theme Color',
       className: 'hide-xs-lg',
       render: (r) => {
         const color = getServiceField(r, 'data.serviceObj.main_color', '#ADD0B3');
         return (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ 
-              width: '20px', 
-              height: '20px', 
-              borderRadius: '4px', 
+            <div style={{
+              width: '20px',
+              height: '20px',
+              borderRadius: '4px',
               backgroundColor: color,
               border: '1px solid #e0e0e0'
             }} />
@@ -108,39 +113,36 @@ export default function ServicesTable({
 
   return (
     <>
-    <ManagedTable
-      columns={columns}
-      rows={services}
-      loading={loading}
-      error={error}
-      onRefresh={onRefresh}
-      onAdd={null}
-      addLabel={null}
-      renderRow={(row) => (
-        <>
-          <IconButton color="primary" size="small" onClick={() => onView(row)} aria-label={`View ${row.title}`} sx={{ mx: 0.5 }}>
-            <Visibility fontSize="small" />
-          </IconButton>
-          <IconButton color="secondary" size="small" onClick={() => onEdit(row)} aria-label={`Edit ${row.title}`} sx={{ mx: 0.5 }}>
-            <Edit fontSize="small" />
-          </IconButton>
-          <IconButton color="error" size="small" onClick={() => handleDeleteClick(row.title)} aria-label={`Delete ${row.title}`} sx={{ mx: 0.5 }}>
-            <Delete fontSize="small" />
-          </IconButton>
-        </>
-      )}
-      primaryColor={PRIMARY_COLOR}
-    />
+      <ResourceTable
+        resource={resource}
+        columns={columns}
+        onAdd={onAdd}
+        addLabel={addLabel}
+        renderRow={(row) => (
+          <>
+            <IconButton color="primary" size="small" onClick={() => onView(row)} aria-label={`View ${getLocalizedValue(row.title)}`} sx={{ mx: 0.5 }}>
+              <Visibility fontSize="small" />
+            </IconButton>
+            <IconButton color="secondary" size="small" onClick={() => onEdit(row)} aria-label={`Edit ${getLocalizedValue(row.title)}`} sx={{ mx: 0.5 }}>
+              <Edit fontSize="small" />
+            </IconButton>
+            <IconButton color="error" size="small" onClick={() => handleDeleteClick(row)} aria-label={`Delete ${getLocalizedValue(row.title)}`} sx={{ mx: 0.5 }}>
+              <Delete fontSize="small" />
+            </IconButton>
+          </>
+        )}
+      />
 
-    <ConfirmDialog
-      open={confirmOpen}
-      onClose={() => setConfirmOpen(false)}
-      onConfirm={handleConfirmDelete}
-      title="Delete Service"
-      message={toDelete ? `Are you sure you want to delete "${toDelete}"? This action cannot be undone.` : 'Are you sure?'}
-      confirmLabel="Delete"
-      loading={false}
-    />
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Service"
+        message={toDelete ? `Are you sure you want to delete "${getLocalizedValue(toDelete.title)}"? This action cannot be undone.` : 'Are you sure?'}
+        confirmLabel="Delete"
+        loading={false}
+        isDanger={true}
+      />
     </>
   );
 }

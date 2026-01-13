@@ -1,85 +1,35 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || (typeof window !== 'undefined' && (window.API_BASE_UR || window.API_BASE_URL)) || "http://localhost:3000";
+import BaseService from "./baseService";
+import apiClient from "../lib/apiClient";
+import { getExtractableId } from "../lib/apiUtils";
 
-// GET all contacts
-export const getContacts = async (token, page = 1, limit = 10, isRead) => {
-  try {
-    let url = `${API_BASE_URL}/contact-us?page=${page}&limit=${limit}`;
-    if (typeof isRead !== "undefined") {
-      url += `&isRead=${isRead}`;
-    }
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("❌ Failed to fetch contacts:", response.status, errText);
-      return null;
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("❌ Error fetching contacts:", error);
-    return null;
+class ContactService extends BaseService {
+  constructor() {
+    super('/contact-us');
   }
-};
 
-// PATCH update read/unread status
-export const updateContactReadStatus = async (token, id, isRead) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/contact-us/${id}/read-status`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ isRead }),
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("❌ Failed to update read status:", response.status, errText);
-      return null;
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("❌ Error updating contact status:", error);
-    return null;
+  // PATCH update read/unread status
+  async updateReadStatus(idOrObj, isRead) {
+      const id = getExtractableId(idOrObj);
+      return await apiClient.patch(`${this.endpoint}/${id}/read-status`, { isRead });
   }
-};
 
-// GET contact statistics (Admins only)
-export const getContactStatistics = async (token, year = null, month = null) => {
-  try {
-    let url = `${API_BASE_URL}/contact-us/statistics`;
-    const params = [];
-    if (year != null) params.push(`year=${year}`);
-    if (month != null) params.push(`month=${month}`);
-    if (params.length) url += `?${params.join('&')}`;
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('❌ Failed to fetch contact statistics:', response.status, errText);
-      return null;
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('❌ Error fetching contact statistics:', error);
-    return null;
+  // GET contact statistics (Admins only)
+  async getStatistics(year = null, month = null) {
+      const params = {};
+      if (year != null) params.year = year;
+      if (month != null) params.month = month;
+      
+      const queryString = this.buildQuery(params);
+      return await apiClient.get(`${this.endpoint}/statistics${queryString}`);
   }
-};
+}
+
+const contactService = new ContactService();
+
+export const getContacts = (page, limit, isRead) => contactService.getAll({ page, limit, isRead });
+
+export const updateContactReadStatus = (id, isRead) => contactService.updateReadStatus(id, isRead);
+
+export const getContactStatistics = (year, month) => contactService.getStatistics(year, month);
+
+export default contactService;

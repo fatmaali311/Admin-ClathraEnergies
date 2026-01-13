@@ -1,9 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import DashboardLayout from '../layout/DashboardLayout';
-import Alert from '../components/ui/Alert';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import Toast from '../components/ui/Toast';
 import SidebarNavigation from '../components/layout/SidebarNavigation';
 import Button from '../components/ui/Button';
 import usePageForm from '../hooks/usePageForm';
@@ -11,13 +9,13 @@ import OurHeroSectionEditor from '../components/pageEditors/our/OurHeroSectionEd
 import GasSeparationSectionEditor from '../components/pageEditors/our/GasSeparationSectionEditor';
 import WhySolutionsSectionEditor from '../components/pageEditors/why/WhySolutionsSectionEditor';
 
+import { PRIMARY_COLOR } from '../components/Common/styles';
+
 const SECTIONS = [
     { id: 'hero-section', title: 'Hero Banner' },
     { id: 'gas-separation', title: 'Gas Separation' },
     { id: 'solutions-section', title: 'Solutions Cards' },
 ];
-
-const PRIMARY_COLOR = '#ADD0B3';
 
 const OurTechnologyContentEditor = () => {
     const { pageTitle } = useParams();
@@ -28,8 +26,6 @@ const OurTechnologyContentEditor = () => {
         isLoading,
         isSubmitting,
         handleSubmit,
-        toast,
-        closeToast
     } = form;
 
     const scrollToSection = (id) => {
@@ -74,16 +70,7 @@ const OurTechnologyContentEditor = () => {
                 >
                     Our Technology Page Content Editor
                 </h1>
-                <div className="mb-6 max-w-4xl mx-auto">
-                    {toast.message && (
-                        <Alert
-                            show={true}
-                            type={toast.type}
-                            message={toast.message}
-                            onClose={closeToast}
-                        />
-                    )}
-                </div>
+
                 <form onSubmit={handleSubmit} className="grid grid-cols-12 gap-8">
                     <div className="col-span-12">
                         <SidebarNavigation
@@ -113,11 +100,6 @@ const OurTechnologyContentEditor = () => {
                     </div>
                 </form>
             </div>
-            <Toast
-                message={toast.message}
-                type={toast.type}
-                onClose={closeToast}
-            />
         </DashboardLayout>
     );
 };

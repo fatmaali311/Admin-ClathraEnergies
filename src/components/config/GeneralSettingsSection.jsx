@@ -1,6 +1,6 @@
 import React from 'react';
 import Card from '../ui/Card';
-import InputGroup from '../ui/InputGroup';
+import LocalizedInput from '../ui/LocalizedInput';
 
 const GeneralSettingsSection = ({ config, handleChange, PRIMARY_COLOR }) => {
   return (
@@ -8,9 +8,8 @@ const GeneralSettingsSection = ({ config, handleChange, PRIMARY_COLOR }) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* App / Business Name */}
         <div className="md:col-span-3">
-          <InputGroup
-            title="App / Business Name"
-            type="text"
+          <LocalizedInput
+            label="App / Business Name"
             name="name"
             value={config.name}
             onChange={handleChange}
@@ -19,11 +18,10 @@ const GeneralSettingsSection = ({ config, handleChange, PRIMARY_COLOR }) => {
 
         {/* ✅ Copyright */}
         <div className="md:col-span-3">
-          <InputGroup
-            title="Copyright Text"
-            type="text"
+          <LocalizedInput
+            label="Copyright Text"
             name="copyright"
-            value={config.copyright || '©2025 ClathraEnergies'}
+            value={config.copyright}
             onChange={handleChange}
           />
         </div>
@@ -135,7 +133,7 @@ const GeneralSettingsSection = ({ config, handleChange, PRIMARY_COLOR }) => {
               value={config.heroGradientOpacity}
               onChange={handleChange}
               className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
-              style={{ accentColor: PRIMARY_COLOR }} 
+              style={{ accentColor: PRIMARY_COLOR }}
               title="Drag to change opacity"
             />
             {/* Text Input for precise value */}

@@ -7,16 +7,7 @@ import AuthFormHeader from '../ui/AuthFormHeader';
 import AuthInputField from '../ui/AuthInputField';
 import AuthButton from '../ui/AuthButton';
 import Alert from '../../../components/ui/Alert';
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } },
-};
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
-};
+import { AUTH_ANIMATION_VARIANTS } from '../../utils/authConstants';
 
 const ForgotPasswordSchema = Yup.object().shape({
   email: Yup.string().email('Please enter a valid email').required('Email is required'),
@@ -40,7 +31,7 @@ const ForgotPasswordForm = () => {
   if (sent) {
     return (
       <motion.div
-        variants={containerVariants}
+        variants={AUTH_ANIMATION_VARIANTS.container}
         initial="hidden"
         animate="visible"
         className="text-center p-6 bg-white rounded-xl shadow-lg border border-gray-100"
@@ -50,7 +41,7 @@ const ForgotPasswordForm = () => {
           description="A password reset link has been successfully sent to the provided email address (if an account exists)."
           showLogo={true}
         />
-        <motion.div variants={itemVariants} className="mt-8">
+        <motion.div variants={AUTH_ANIMATION_VARIANTS.item} className="mt-8">
           <Alert
             show={true}
             type="success"
@@ -70,7 +61,7 @@ const ForgotPasswordForm = () => {
 
   //  Default Form
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible">
+    <motion.div variants={AUTH_ANIMATION_VARIANTS.container} initial="hidden" animate="visible">
       <AuthFormHeader
         title="Reset Password"
         description="Enter the email associated with your account to receive a password reset link."
@@ -96,13 +87,12 @@ const ForgotPasswordForm = () => {
           error={touched.email && errors.email}
           required
           autoComplete="email"
-          variants={itemVariants}
           aria-invalid={touched.email && errors.email ? 'true' : 'false'}
           aria-describedby={touched.email && errors.email ? 'email-error' : undefined}
         />
 
-        <motion.div variants={itemVariants} className="pt-2">
-          <AuthButton type="submit" loading={isSubmitting || loading} disabled={isSubmitting || !isValid || loading}>
+        <motion.div variants={AUTH_ANIMATION_VARIANTS.item} className="pt-2">
+          <AuthButton type="submit" loading={isSubmitting || loading} disabled={isSubmitting || loading}>
             {isSubmitting || loading ? (
               <>
                 <span className="animate-spin inline-block mr-2">⏳</span> Sending Request...
@@ -113,7 +103,7 @@ const ForgotPasswordForm = () => {
           </AuthButton>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="text-center mt-3">
+        <motion.div variants={AUTH_ANIMATION_VARIANTS.item} className="text-center mt-3">
           <a
             href="/login"
             className="text-sm text-[#ADD0B3] font-medium hover:text-[#388E3C] transition-colors"

@@ -2,6 +2,7 @@ import React from 'react';
 import Card from '../../ui/Card';
 import MediaUpload from '../../ui/MediaUpload';
 import { getAdminImageUrl } from '../../../lib/mediaUtils';
+import LocalizedTextArea from '../../ui/LocalizedTextArea';
 
 const OurStepsSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
     const {
@@ -53,14 +54,11 @@ const OurStepsSectionEditor = ({ form, activeSection, PRIMARY_COLOR }) => {
 
                         {/* Step Text Area */}
                         <div className="mb-4">
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Step Text</label>
-                            <textarea
-                                name={`steps.${index}.text`}
-                                value={step.text || ''}
+                            <LocalizedTextArea
+                                label="Step Text"
+                                name="text"
+                                value={step.text}
                                 onChange={(e) => handleArrayItemChange('steps', index, 'text', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#ADD0B3] resize-none"
-                                rows="3"
-                                placeholder="Enter step text..."
                             />
                         </div>
 

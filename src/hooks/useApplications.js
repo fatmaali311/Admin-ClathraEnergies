@@ -1,44 +1,49 @@
-import { useEffect, useState, useCallback } from "react";
-import { getApplications } from "../services/applicationService";
+import { useCallback, useEffect } from "react";
+import applicationService from "../services/applicationService";
+import { useResource } from "./useResource";
 
 /**
  * Custom hook to fetch and manage paginated and filtered job applications.
- * @param {string} token - Authentication token.
- * @param {number} page - Current page number.
- * @param {number} limit - Items per page.
- * @param {string} status - Filter status ('pending', 'approved', etc.)
- * @returns {{applications: object[], loading: boolean, totalPages: number, totalApplications: number, refetchApplications: () => void}}
+ * Now acts as an autonomous resource hook.
+ * 
+ * @param {object} initialParams - Initial parameters (page, limit, status, positionId)
+ * @returns {object} { applications, loading, resource, ... }
  */
-export const useApplications = (token, page = 1, limit = 10, status = '', positionId = '') => {
-  const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [refreshToggle, setRefreshToggle] = useState(false);
+export const useApplications = (initialParams = {}) => {
+  // Destructure initial params with defaults
+  const { page = 1, limit = 10, status = '', positionId = '' } = initialParams;
 
-  // Function to trigger a re-fetch of applications
-  const refetchApplications = useCallback(() => setRefreshToggle(prev => !prev), []);
+  const fetcher = useCallback((params) => applicationService.getAll(params), []);
+  
+  // Initialize useResource with initial values.
+  const resource = useResource(fetcher, { page, limit, status, positionId });
+  const { 
+    data: applications, 
+    loading, 
+    pagination: { totalPages, totalItems }, 
+    refresh,
+    setFilters
+  } = resource;
 
+  // Sync ONLY filters from props (if they change).
+  // We assume 'page' and 'limit' are now managed internally by useResource (via ResourceTable).
+  // If the parent DOES pass a changing 'page' prop, it will be ignored after mount unless we sync it.
+  // But for "Autonomous" mode, we usually don't want parent to drive page unless it's a specific need.
+  // We will ONLY sync filters.
+  
   useEffect(() => {
-    const fetchApplications = async () => {
-      setLoading(true);
-      const data = await getApplications(token, page, limit, status, positionId);
+    // Only update if these specific filters change
+    setFilters({ status, positionId });
+  }, [status, positionId, setFilters]);
 
-      if (data && data.data) {
-        setApplications(data.data);
-        setTotalPages(data.totalPages || 1);
-        setTotal(data.totalItems || 0);
-      } else {
-        setApplications([]);
-        setTotalPages(1);
-        setTotal(0);
-      }
-
-      setLoading(false);
-    };
-
-    if (token) fetchApplications();
-  }, [token, page, limit, status, positionId, refreshToggle]);
-
-  return { applications, loading, totalPages, totalApplications: total, refetchApplications };
+  // We return the flattened props for backward compatibility 
+  // AND the full 'resource' object for the new ResourceTable
+  return { 
+    applications: applications || [], 
+    loading, 
+    totalPages, 
+    totalApplications: totalItems, 
+    refetchApplications: refresh,
+    resource // The full resource object
+  };
 };

@@ -1,22 +1,93 @@
 import React from 'react';
-import { PRIMARY_COLOR, HOVER_COLOR } from './styles';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Typography,
+  Button,
+  CircularProgress
+} from '@mui/material';
+import { Warning as WarningIcon } from '@mui/icons-material';
+import { PRIMARY_COLOR } from './styles'; // Assuming styles exports PRIMARY_COLOR
+import { getLocalizedValue } from '../../lib/apiUtils';
 
-export function ConfirmDialog({ open, onClose, onConfirm, title = 'Confirm', message = '', confirmLabel = 'Confirm', cancelLabel = 'Cancel', loading = false }) {
-  if (!open) return null;
+export function ConfirmDialog({
+  open,
+  onClose,
+  onConfirm,
+  title = 'Confirm',
+  message = '',
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
+  loading = false,
+  isDanger = false
+}) {
+  const handleClose = () => {
+    if (!loading && onClose) {
+      onClose(false);
+    }
+  };
+
+  const safeTitle = getLocalizedValue(title);
+  const safeMessage = getLocalizedValue(message);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => onClose(false)}>
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal>
-        <h3 className="text-lg font-semibold mb-2">{title}</h3>
-        <p className="text-gray-600 mb-6">{message}</p>
-        <div className="flex justify-end gap-3">
-          <button onClick={() => onClose(false)} className="px-4 py-2 rounded-lg" style={{ background: '#F3F4F6', color: '#374151' }}>{cancelLabel}</button>
-          <button onClick={onConfirm} disabled={loading} className="px-4 py-2 rounded-lg" style={{ background: PRIMARY_COLOR, color: 'white' }}>
-            {loading ? 'Processing...' : confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      PaperProps={{
+        sx: {
+          borderRadius: 2,
+          padding: 1,
+          minWidth: '320px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
+        }
+      }}
+    >
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, color: isDanger ? 'error.main' : 'text.primary' }}>
+        {isDanger && <WarningIcon color="error" />}
+        {safeTitle}
+      </DialogTitle>
+
+      <DialogContent sx={{ pb: 1 }}>
+        <Typography variant="body1" color="text.secondary">
+          {safeMessage}
+        </Typography>
+      </DialogContent>
+
+      <DialogActions sx={{ p: 2, pt: 1 }}>
+        <Button
+          onClick={handleClose}
+          disabled={loading}
+          variant="outlined"
+          color="inherit"
+          sx={{ borderRadius: 2, textTransform: 'none', px: 3 }}
+        >
+          {cancelLabel}
+        </Button>
+        <Button
+          onClick={onConfirm}
+          disabled={loading}
+          variant="contained"
+          color={isDanger ? "error" : "primary"}
+          sx={{
+            borderRadius: 2,
+            textTransform: 'none',
+            px: 3,
+            boxShadow: 'none',
+            bgcolor: !isDanger ? PRIMARY_COLOR : undefined,
+            '&:hover': {
+              bgcolor: !isDanger ? PRIMARY_COLOR : undefined,
+              opacity: 0.9
+            }
+          }}
+          startIcon={loading && <CircularProgress size={20} color="inherit" />}
+        >
+          {loading ? 'Processing...' : confirmLabel}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }
 

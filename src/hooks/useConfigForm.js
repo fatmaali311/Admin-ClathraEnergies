@@ -1,50 +1,95 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getConfiguration } from '../services/configService';
+import { updateNestedValue, updateArrayItem, addArrayItem, removeArrayItem } from '../lib/stateUtils';
 
 const INITIAL_CONFIG = {
-  name: '',
+  name: { en: '', fr: '', zh: '' },
   mainColor: '',
   secondaryColor: '',
   titleColor: '',       
   subtitleColor: '', 
   heroGradientOpacity: 0.6,  
-  contactInfo: { },
+  contactInfo: {
+      name: { en: '', fr: '', zh: '' },
+      details: {
+          email: '',
+          phone: '',
+          address: {
+              street: '',
+              city: '',
+              country: '',
+          }
+      }
+  },
   socialLinks: [],
   workingHours: [],
-  working_title: '',
+  working_title: { en: '', fr: '', zh: '' },
   mediaUrls: {
     mainLogoUrl: '',
     secondaryLogoUrl: '',
     mainVideoUrl: '',
     mainImageUrl: '',
   },
-  copyright: '',
+  copyright: { en: '', fr: '', zh: '' },
 };
 
+const normalizeConfig = (data) => {
+    const toLocalized = (val) => {
+        if (val && typeof val === 'object' && 'en' in val) return val;
+        return { en: val || '', fr: '', zh: '' };
+    };
 
-const useConfigForm = (token) => {
+    const toString = (val) => {
+        if (val && typeof val === 'object' && 'en' in val) return val.en || '';
+        return val || '';
+    };
+
+    return {
+        ...data,
+        name: toLocalized(data.name),
+        copyright: toLocalized(data.copyright),
+        working_title: toLocalized(data.working_title),
+        contactInfo: {
+            ...data.contactInfo,
+            name: toLocalized(data.contactInfo?.name),
+            details: {
+                ...data.contactInfo?.details,
+                address: {
+                    street: toString(data.contactInfo?.details?.address?.street),
+                    city: toString(data.contactInfo?.details?.address?.city),
+                    country: toString(data.contactInfo?.details?.address?.country),
+                }
+            }
+        },
+        socialLinks: (data.socialLinks || []).map(link => ({
+            ...link,
+            name: toLocalized(link.name)
+        }))
+    };
+};
+
+const useConfigForm = () => {
   const [config, setConfig] = useState(INITIAL_CONFIG);
   const [fileState, setFileState] = useState({
     mainLogo: null,
     secondaryLogo: null,
     mainVideo: null,
-
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  // 🔹 Load configuration from API
   useEffect(() => {
     const loadConfig = async () => {
       try {
         setIsLoading(true);
-        const data = await getConfiguration(token);
+        const data = await getConfiguration();
         if (data?.configObj) {
-          // Check if main_video is in videos or images
           const mainVideoUrl = data.videos?.main_video || data.images?.main_video || '';
           const mainImageUrl = data.images?.main_video || '';
           
+          const normalizedConfig = normalizeConfig(data.configObj);
+
           setConfig({
-            ...data.configObj,
+            ...normalizedConfig,
             mediaUrls: {
               mainLogoUrl: data.images?.main_logo || '',
               secondaryLogoUrl: data.images?.secondary_logo || '',
@@ -61,25 +106,14 @@ const useConfigForm = (token) => {
     };
 
     loadConfig();
-  }, [token]);
-
-  // 🔹 Handle nested property changes (like contactInfo.email)
-  const handleNestedChange = useCallback((e) => {
-    const { name, value } = e.target;
-    const keys = name.split('.');
-    setConfig((prev) => {
-      const newConfig = { ...prev };
-      let current = newConfig;
-      for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] };
-        current = current[keys[i]];
-      }
-      current[keys[keys.length - 1]] = value;
-      return newConfig;
-    });
   }, []);
 
-  // 🔹 Handle file upload preview
+  const handleNestedChange = useCallback((e) => {
+    const { name, value } = e.target;
+    if (!name) return;
+    setConfig((prev) => updateNestedValue(prev, name, value));
+  }, []);
+
   const handleFileChange = useCallback((e) => {
     const { name, files } = e.target;
     const file = files[0];
@@ -93,45 +127,32 @@ const useConfigForm = (token) => {
     }
   }, []);
 
-  // 🔹 Handle add/update/remove actions for arrays
-  const handleArrayAction = (arrayName, action, index, field, value) => {
+  const handleArrayAction = useCallback((arrayName, action, index, field, value) => {
     setConfig((prev) => {
-      const newArray = [...(prev[arrayName] || [])];
-
-      if (action === 'ADD') {
-        if (arrayName === 'workingHours') {
-          newArray.push({
-            dayFrom: '',
-            dayTo: '',
-            hoursFrom: '',
-            hoursTo: '',
-            isClosed: false,
-          });
-        } else if (arrayName === 'socialLinks') {
-          newArray.push({
-            name: '',
-            link: '',
-            iconClass: '',
-          });
-        } else {
-          newArray.push({});
+      switch (action) {
+        case 'ADD': {
+          const defaultItem = arrayName === 'workingHours' 
+            ? { dayFrom: '', dayTo: '', hoursFrom: '', hoursTo: '', isClosed: false }
+            : arrayName === 'socialLinks'
+            ? { name: { en: '', fr: '', zh: '' }, link: '', iconClass: '' }
+            : {};
+          return addArrayItem(prev, arrayName, defaultItem);
         }
-      } else if (action === 'REMOVE') {
-        newArray.splice(index, 1);
-      } else if (action === 'UPDATE') {
-        newArray[index] = { ...newArray[index], [field]: value };
+        case 'REMOVE':
+          return removeArrayItem(prev, arrayName, index);
+        case 'UPDATE':
+          return updateArrayItem(prev, arrayName, index, field, value);
+        default:
+          return prev;
       }
-
-      return { ...prev, [arrayName]: newArray };
     });
-  };
+  }, []);
 
-  // 🔹 Optional utilities (for flexibility)
-  const resetConfig = () => setConfig(INITIAL_CONFIG);
-  const setConfigField = (field, value) =>
-    setConfig((prev) => ({ ...prev, [field]: value }));
+  const resetConfig = useCallback(() => setConfig(INITIAL_CONFIG), []);
+  
+  const setConfigField = useCallback((field, value) =>
+    setConfig((prev) => ({ ...prev, [field]: value })), []);
 
-  // 🔹 Cleanup for object URLs (to prevent memory leaks)
   useEffect(() => {
     return () => {
       Object.values(config.mediaUrls).forEach((url) => {

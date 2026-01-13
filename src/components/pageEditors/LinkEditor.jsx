@@ -1,12 +1,16 @@
-import React from "react";
+import LocalizedInput from "../ui/LocalizedInput";
 import InputGroup from "../ui/InputGroup";
 
 const LinkEditor = ({ index, linkObj, basePath, onChange, onRemove, allowRemoval }) => {
   const isArrayItem = index !== undefined && index !== null; // Check if it's an array item
 
-  const handleChange = (field, event) => {
-    const value = event.target.value;
-    
+  const handleChange = (field, eventOrValue) => {
+    // LocalizedInput returns { target: { name, value } } or sometimes just the value depending on implementation
+    // But my LocalizedInput implementation calls onChange({ target: { name, value } })
+
+    // For LocalizedInput, the event argument is the standard event object.
+    const value = eventOrValue.target ? eventOrValue.target.value : eventOrValue;
+
     if (isArrayItem) {
       // Logic for array items (e.g., in HeroSectionEditor)
       onChange(basePath, index, field, value);
@@ -20,11 +24,11 @@ const LinkEditor = ({ index, linkObj, basePath, onChange, onRemove, allowRemoval
 
   return (
     <div className="space-y-3 border border-gray-200 rounded-xl p-4 shadow-sm bg-white">
-      <InputGroup
-        title="Button Name"
-        value={linkObj.name || ""}
+      <LocalizedInput
+        label="Button Name"
+        name="name"
+        value={linkObj.name}
         onChange={(e) => handleChange("name", e)}
-        placeholder="Enter button name"
       />
       <InputGroup
         title="Button Link"

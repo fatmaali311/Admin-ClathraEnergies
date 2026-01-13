@@ -4,25 +4,16 @@ import { useSetupAccount } from '../../hooks/useSetupAccount';
 import AuthFormHeader from '../ui/AuthFormHeader';
 import AuthInputField from '../ui/AuthInputField';
 import AuthButton from '../ui/AuthButton';
-import Alert from '../../../components/ui/Alert'; 
+import Alert from '../../../components/ui/Alert';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
-};
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.7 } }
-};
+import { AUTH_ANIMATION_VARIANTS, PASSWORD_REGEX, PASSWORD_ERROR_MESSAGE, USERNAME_REGEX } from '../../utils/authConstants';
 
 const SetupAccountSchema = Yup.object().shape({
   userName: Yup.string()
     .min(3, "Username must be at least 3 characters")
     .max(20, "Username must be 20 characters or less")
-    .matches(/^[a-zA-Z0-9._-]+$/, 'Username must be 3-20 characters with letters, numbers, or ._-')
+    .matches(USERNAME_REGEX, 'Username must be 3-20 characters with letters, numbers, or ._-')
     .required('Username is required'),
   fullName: Yup.string()
     .max(100, "Full name is too long")
@@ -30,10 +21,7 @@ const SetupAccountSchema = Yup.object().shape({
   password: Yup.string()
     .min(8, 'Password must be at least 8 characters')
     .max(50, 'Password is too long')
-    .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-      'Password must be at least 8 characters with uppercase, lowercase, numbers, and special characters'
-    )
+    .matches(PASSWORD_REGEX, PASSWORD_ERROR_MESSAGE)
     .required('Password is required'),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref('password'), null], 'Passwords do not match')
@@ -60,7 +48,7 @@ const SetupAccountForm = () => {
   if (setupComplete) {
     return (
       <motion.div
-        variants={containerVariants}
+        variants={AUTH_ANIMATION_VARIANTS.container}
         initial="hidden"
         animate="visible"
         className="text-center p-6 bg-white rounded-xl shadow-lg border border-gray-100"
@@ -70,7 +58,7 @@ const SetupAccountForm = () => {
           description="Your ClathraEnergies Admin Dashboard account has been successfully set up."
           showLogo={true}
         />
-        <motion.div variants={itemVariants} className="mt-8">
+        <motion.div variants={AUTH_ANIMATION_VARIANTS.item} className="mt-8">
           <Alert
             show={true}
             type="success"
@@ -90,7 +78,7 @@ const SetupAccountForm = () => {
 
   // Form state render
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="visible">
+    <motion.div variants={AUTH_ANIMATION_VARIANTS.container} initial="hidden" animate="visible">
       <AuthFormHeader
         title="Set Up Your Account"
         description="Please provide your required details to complete your Admin Dashboard account setup."
@@ -115,7 +103,6 @@ const SetupAccountForm = () => {
           onBlur={handleBlur}
           error={touched.userName && errors.userName}
           autoComplete="username"
-          variants={itemVariants}
           aria-invalid={touched.userName && errors.userName ? "true" : "false"}
           aria-describedby={touched.userName && errors.userName ? "userName-error" : undefined}
         />
@@ -131,7 +118,6 @@ const SetupAccountForm = () => {
           onBlur={handleBlur}
           error={touched.fullName && errors.fullName}
           autoComplete="name"
-          variants={itemVariants}
           aria-invalid={touched.fullName && errors.fullName ? "true" : "false"}
           aria-describedby={touched.fullName && errors.fullName ? "fullName-error" : undefined}
         />
@@ -148,7 +134,6 @@ const SetupAccountForm = () => {
           error={touched.password && errors.password}
           required
           autoComplete="new-password"
-          variants={itemVariants}
           aria-invalid={touched.password && errors.password ? "true" : "false"}
           aria-describedby={touched.password && errors.password ? "password-error" : undefined}
         />
@@ -165,13 +150,12 @@ const SetupAccountForm = () => {
           error={touched.confirmPassword && errors.confirmPassword}
           required
           autoComplete="new-password"
-          variants={itemVariants}
           aria-invalid={touched.confirmPassword && errors.confirmPassword ? "true" : "false"}
           aria-describedby={touched.confirmPassword && errors.confirmPassword ? "confirmPassword-error" : undefined}
         />
 
-        <motion.div variants={itemVariants} className="pt-2">
-          <AuthButton type="submit" loading={isSubmitting} disabled={isSubmitting || !isValid}>
+        <motion.div variants={AUTH_ANIMATION_VARIANTS.item} className="pt-2">
+          <AuthButton type="submit" loading={isSubmitting} disabled={isSubmitting}>
             {isSubmitting ? (
               <>
                 <span className="animate-spin inline-block mr-2">⏳</span> Finalizing Setup...
@@ -182,7 +166,7 @@ const SetupAccountForm = () => {
           </AuthButton>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="text-center mt-3">
+        <motion.div variants={AUTH_ANIMATION_VARIANTS.item} className="text-center mt-3">
           <a
             href="/login"
             className="text-sm text-[#ADD0B3] font-medium hover:text-[#388E3C] transition-colors"
