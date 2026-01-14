@@ -1,5 +1,5 @@
 import apiClient from "../lib/apiClient";
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_API_URL ;
 
 const normalizeMedia = (obj = {}) => {
     const normalized = { ...obj };
