@@ -1,42 +1,52 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import Logo from '../Common/Logo';
 import { logoutRequest } from '../../Auth/services/authService';
 import Alert from '../ui/Alert';
 import { useNavigate, Link } from 'react-router-dom';
-import { MdMenu, MdSearch } from 'react-icons/md';
-
+import {
+    AppBar,
+    Toolbar,
+    IconButton,
+    Typography,
+    Box,
+    Menu,
+    MenuItem,
+    Avatar,
+    Divider,
+    ListItemIcon
+} from '@mui/material';
+import {
+    Menu as MenuIcon,
+    Logout as LogoutIcon,
+    Person as PersonIcon
+} from '@mui/icons-material';
 
 /**
  * Header Component
- * Full-width, fixed header with search, profile menu, and mobile toggle.
+ * Material UI implementation.
+ * Contains: Sidebar Toggle, Logo/Title, Profile Menu.
  */
-const Header = ({ toggleSidebar }) => {
+const Header = ({ toggleSidebar, isSidebarOpen }) => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [alert, setAlert] = useState({ show: false, type: 'info', message: '' });
-    const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
-    // Use a ref for the profile menu to handle clicks outside
-    const profileMenuRef = useRef(null);
+    // Profile Menu State
+    const [anchorEl, setAnchorEl] = useState(null);
+    const isMenuOpen = Boolean(anchorEl);
 
-    // Close profile menu when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            // Check if the click is outside the menu *and* outside the profile image/button
-            if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
-                setIsProfileMenuOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+    const handleProfileMenuOpen = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
 
-    const handleLogout = useCallback(async () => {
+    const handleProfileMenuClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleLogout = async () => {
         try {
-            // Close the menu immediately
-            setIsProfileMenuOpen(false);
-
+            handleProfileMenuClose();
             await logoutRequest();
             logout();
 
@@ -54,114 +64,174 @@ const Header = ({ toggleSidebar }) => {
                 message: 'Failed to log out. Please try again.',
             });
         }
-    }, [navigate, logout]); // Dependency array for useCallback is added
+    };
 
-
+    // Brand Colors
+    const primaryColor = '#ADD0B3'; // Green
+    const textColor = '#388E3C';   // Darker Green text
+    const drawerWidth = 260; // Sidebar Open width
+    const miniDrawerWidth = 72; // Sidebar Closed width
 
     return (
         <>
-            <header className="bg-white shadow-md h-16 p-4 flex items-center justify-between fixed top-0 left-0 right-0 z-50 border-b border-gray-100">
+            <AppBar
+                position="fixed"
+                elevation={1}
+                sx={{
+                    backgroundColor: 'white',
+                    color: 'text.primary',
+                    borderBottom: '1px solid #f0f0f0',
+                    // Header Width/Margin Logic:
+                    // If desktop & open: Width = 100% - 260, Margin = 260
+                    // If desktop & closed: Width = 100% - 72, Margin = 72
+                    // If mobile: Width = 100%, Margin = 0
 
-                {/* Left Side: Mobile Menu Button + Logo/Name (Desktop) */}
-                <div className="flex items-center">
-                    {/* Menu button (mobile only) */}
-                    <button
-                        className="md:hidden p-1 text-[#388E3C] hover:text-[#2E7D32] mr-2 transition-colors focus:outline-none focus:ring-2 focus:ring-[#ADD0B3] rounded-md"
+                    transition: (theme) => theme.transitions.create(['width', 'margin'], {
+                        easing: theme.transitions.easing.sharp,
+                        duration: theme.transitions.duration.leavingScreen,
+                    }),
+
+                    // Desktop Logic
+                    width: { md: `calc(100% - ${isSidebarOpen ? drawerWidth : miniDrawerWidth}px)` },
+                    marginLeft: { md: `${isSidebarOpen ? drawerWidth : miniDrawerWidth}px` },
+
+                }}
+            >
+                <Toolbar>
+                    {/* Mobile Toggle Button (Visible only on mobile) */}
+                    <IconButton
+                        color="inherit"
+                        aria-label="open drawer"
+                        edge="start"
                         onClick={toggleSidebar}
-                        aria-label="Toggle Sidebar"
+                        sx={{ mr: 2, display: { md: 'none' }, color: textColor }}
                     >
-                        <MdMenu size={28} />
-                    </button>
+                        <MenuIcon />
+                    </IconButton>
 
+                    {/* Logo & Application Name */}
+                    <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+                        <Logo size="sm" className="mr-2" marginBottom={false} />
+                        <Typography
+                            variant="h6"
+                            noWrap
+                            component="div"
+                            sx={{
+                                fontWeight: 800,
+                                color: primaryColor,
+                                display: { xs: 'none', sm: 'block' }
+                            }}
+                        >
+                            ClathraEnergies
+                        </Typography>
+                    </Link>
 
-                    {/* Logo + Name (desktop only) */}
-                    <div className="hidden md:flex items-center min-w-[200px] select-none">
+                    {/* Spacer */}
+                    <Box sx={{ flexGrow: 1 }} />
 
-                        {/* Using default dark logo as the header background is white */}
-                        <Link to="/" className="flex items-center">
-                            <Logo size="sm" className="mr-2" marginBottom={false} />
-                            <span className="text-xl font-extrabold text-[#ADD0B3]">ClathraEnergies</span>
-                        </Link>
-                    </div>
-                </div>
+                    {/* Profile Section */}
+                    <Box sx={{ display: 'flex' }}>
+                        <IconButton
+                            size="large"
+                            edge="end"
+                            aria-label="account of current user"
+                            aria-controls="menu-appbar"
+                            aria-haspopup="true"
+                            onClick={handleProfileMenuOpen}
+                            color="inherit"
+                            sx={{ p: 0 }}
+                        >
+                            <Avatar
+                                alt={user?.fullName || 'User'}
+                                src={user?.profileImage || `https://ui-avatars.com/api/?name=${user?.fullName || 'User'}&background=ADD0B3&color=ffffff&size=40`}
+                                sx={{
+                                    width: 40,
+                                    height: 40,
+                                    border: `2px solid transparent`,
+                                    '&:hover': { borderColor: primaryColor },
+                                    transition: 'all 0.2s'
+                                }}
+                            />
+                        </IconButton>
 
-                {/* Center: Search bar (Hidden on smallest mobile screens) */}
-                <div className="flex-1 mx-4 md:mx-8 max-w-lg hidden sm:flex">
-                    <div className="relative w-full">
-                        <MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                        <input
-                            type="text"
-                            placeholder="Search assets, users, or data..."
-                            className="w-full pl-10 pr-4 h-10 border border-gray-300 rounded-full text-sm transition-all shadow-sm
-                                        focus:outline-none focus:ring-2 focus:ring-[#ADD0B3] focus:border-white"
-                        />
-                    </div>
-                </div>
-
-                {/* Right Side: Profile menu */}
-                <div className="relative" ref={profileMenuRef}>
-                    {/* Profile Image/Button */}
-                    <img
-                        src={user?.profileImage || `https://ui-avatars.com/api/?name=${user?.fullName || 'User'}&background=ADD0B3&color=ffffff&size=40`}
-                        alt="Profile"
-                        className="w-10 h-10 rounded-full cursor-pointer border-2 border-transparent hover:border-[#ADD0B3] transition-all object-cover shadow-md"
-                        loading="lazy"
-                        onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                    />
-
-
-                    {/* Profile Dropdown Menu */}
-                    {isProfileMenuOpen && (
-                        <div
-                            className="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden transform origin-top-right animate-fade-in ring-1 ring-gray-200"
-                            role="menu"
-                            aria-orientation="vertical"
+                        <Menu
+                            id="menu-appbar"
+                            anchorEl={anchorEl}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'right',
+                            }}
+                            keepMounted
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'right',
+                            }}
+                            open={isMenuOpen}
+                            onClose={handleProfileMenuClose}
+                            PaperProps={{
+                                elevation: 3,
+                                sx: {
+                                    mt: 1.5,
+                                    minWidth: 200,
+                                    borderRadius: 2,
+                                    overflow: 'visible',
+                                    filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
+                                    '&:before': {
+                                        content: '""',
+                                        display: 'block',
+                                        position: 'absolute',
+                                        top: 0,
+                                        right: 14,
+                                        width: 10,
+                                        height: 10,
+                                        bgcolor: 'background.paper',
+                                        transform: 'translateY(-50%) rotate(45deg)',
+                                        zIndex: 0,
+                                    },
+                                }
+                            }}
                         >
                             {/* User Info Header */}
-                            <div className="flex items-center p-4 border-b border-gray-100 bg-gray-50">
-                                <img
-                                    src={user?.profileImage || `https://ui-avatars.com/api/?name=${user?.fullName || 'User'}&background=ADD0B3&color=ffffff&size=40`}
-                                    alt="Profile"
-                                    className="w-10 h-10 rounded-full object-cover mr-3"
-                                />
-                                <div>
-                                    <p className="text-sm font-semibold text-gray-800 truncate">{user?.fullName || 'Admin User'}</p>
-                                    <p className="text-xs text-[#388E3C] capitalize">{user?.role || 'Administrator'}</p>
-                                </div>
-                            </div>
+                            <Box sx={{ px: 2, py: 1.5, bgcolor: '#f9f9f9', borderBottom: '1px solid #eee' }}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#333' }}>
+                                    {user?.fullName || 'Admin User'}
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: textColor, textTransform: 'capitalize' }}>
+                                    {user?.role || 'Administrator'}
+                                </Typography>
+                            </Box>
 
-                            {/* Profile Link (using Link for navigation) */}
-                            <Link
-                                to="/dashboard/profile"
-                                onClick={() => setIsProfileMenuOpen(false)}
-                                className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-[#ADD0B3] hover:text-[#388E3C] transition-colors font-medium"
-                                role="menuitem"
-                            >
+                            <MenuItem onClick={() => { handleProfileMenuClose(); navigate('/dashboard/profile'); }}>
+                                <ListItemIcon>
+                                    <PersonIcon fontSize="small" sx={{ color: '#757575' }} />
+                                </ListItemIcon>
                                 Profile
-                            </Link>
+                            </MenuItem>
 
-                            {/* Logout Button */}
-                            <button
-                                onClick={handleLogout}
-                                className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-[#ADD0B3] hover:text-[#388E3C] transition-colors font-medium"
-                                role="menuitem"
-                            >
-                                Logout
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </header>
+                            <Divider />
 
-            {/* Alert messages container (positioned below the fixed header) */}
-            <div className="fixed top-16 right-4 z-50 w-full max-w-xs md:max-w-sm">
+                            <MenuItem onClick={handleLogout}>
+                                <ListItemIcon>
+                                    <LogoutIcon fontSize="small" sx={{ color: '#d32f2f' }} />
+                                </ListItemIcon>
+                                <Typography variant="body2" color="error">
+                                    Logout
+                                </Typography>
+                            </MenuItem>
+                        </Menu>
+                    </Box>
+                </Toolbar>
+            </AppBar>
+
+            {/* Alert messages container */}
+            <Box sx={{ position: 'fixed', top: 70, right: 16, zIndex: 9999, width: '100%', maxWidth: 350 }}>
                 <Alert
                     show={alert.show}
                     type={alert.type}
                     message={alert.message}
                     onClose={() => setAlert({ show: false, type: 'info', message: '' })}
                 />
-            </div>
+            </Box>
         </>
     );
 };
