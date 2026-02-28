@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 
 import LocalizedInput from '../ui/LocalizedInput';
 import LocalizedTextArea from '../ui/LocalizedTextArea';
+import LocalizedRichTextEditor from '../ui/LocalizedRichTextEditor';
 
 const PRIMARY_COLOR = "#ADD0B3";
 const HOVER_COLOR = "#8CB190";
@@ -69,8 +70,28 @@ export default function PositionFormModal({ open, onClose, position }) {
     setError('');
 
     // Simple validation
-    if (!formData.name?.en?.trim() || !formData.location?.en?.trim() || !formData.type) {
-      setError("Name, Location, and Type are required fields.");
+    const hasEnglishName = formData.name?.en?.trim();
+    const hasFrenchName = formData.name?.fr?.trim();
+    const hasChineseName = formData.name?.zh?.trim();
+
+    const hasEnglishLoc = formData.location?.en?.trim();
+    const hasFrenchLoc = formData.location?.fr?.trim();
+    const hasChineseLoc = formData.location?.zh?.trim();
+
+    if (!hasEnglishName || !hasFrenchName || !hasChineseName) {
+      setError("Position Name is required in all three languages (EN, FR, ZH).");
+      setLoading(false);
+      return;
+    }
+
+    if (!hasEnglishLoc || !hasFrenchLoc || !hasChineseLoc) {
+      setError("Location is required in all three languages (EN, FR, ZH).");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.type) {
+      setError("Type is a required field.");
       setLoading(false);
       return;
     }
@@ -79,15 +100,23 @@ export default function PositionFormModal({ open, onClose, position }) {
       if (isEdit) {
         const posId = position._id || position.id || position;
         await updatePosition(posId, formData);
-        toast.success(`Position "${formData.name}" updated successfully!`);
+        toast.success(`Position "${formData.name.en || 'updated'}" updated successfully!`);
       } else {
         await createPosition(formData);
-        toast.success(`Position "${formData.name}" created successfully!`);
+        toast.success(`Position "${formData.name.en || 'created'}" created successfully!`);
       }
       onClose(true); // Close and signal that a refresh is needed
     } catch (err) {
-      const msg = err.message.includes('Failed') ? 'Server error occurred.' : err.message;
-      setError(`Operation failed: ${msg}`);
+      if (err.response?.data?.message) {
+        // NestJS validation error messages (which could be an array of strings)
+        const msg = Array.isArray(err.response.data.message)
+          ? err.response.data.message[0]
+          : err.response.data.message;
+        setError(msg);
+      } else {
+        const msg = err.message.includes('Failed') ? 'Server error occurred. Please try again later.' : err.message;
+        setError(`Operation failed: ${msg}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -109,7 +138,7 @@ export default function PositionFormModal({ open, onClose, position }) {
         <DialogContent dividers sx={{ backgroundColor: 'gray.50', p: 4 }}>
           {error && <Typography color="error" gutterBottom>{error}</Typography>}
 
-          <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             <LocalizedInput label="Position Name" name="name" value={formData.name} onChange={handleChange} required className="mb-0" />
             <LocalizedInput label="Location" name="location" value={formData.location} onChange={handleChange} required className="mb-0" />
             <FormControl fullWidth required>
@@ -131,10 +160,10 @@ export default function PositionFormModal({ open, onClose, position }) {
             </FormControl>
           </Box>
 
-          <LocalizedTextArea label="What We Offer" name="whatWeOffer" value={formData.whatWeOffer} onChange={handleChange} rows={3} className="mt-4" />
-          <LocalizedTextArea label="Why We Are Looking" name="whyWeAreLooking" value={formData.whyWeAreLooking} onChange={handleChange} rows={3} />
-          <LocalizedTextArea label="Responsibilities" name="responsibilities" value={formData.responsibilities} onChange={handleChange} rows={5} />
-          <LocalizedTextArea label="Required Skills (e.g., HTML, React, NodeJS)" name="skills" value={formData.skills} onChange={handleChange} rows={3} />
+          <LocalizedRichTextEditor label="What We Offer" name="whatWeOffer" value={formData.whatWeOffer} onChange={handleChange} className="mt-4" />
+          <LocalizedRichTextEditor label="Why We Are Looking" name="whyWeAreLooking" value={formData.whyWeAreLooking} onChange={handleChange} />
+          <LocalizedRichTextEditor label="Responsibilities" name="responsibilities" value={formData.responsibilities} onChange={handleChange} />
+          <LocalizedRichTextEditor label="Required Skills (e.g., HTML, React, NodeJS)" name="skills" value={formData.skills} onChange={handleChange} />
         </DialogContent>
 
         <DialogActions sx={{ p: 3, justifyContent: 'center', backgroundColor: 'white' }}>

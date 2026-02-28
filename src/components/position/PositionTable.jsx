@@ -13,17 +13,46 @@ export default function PositionTable({ resource, onView, onEdit, onDelete }) {
   const { loading } = resource || {};
 
   if (loading && !resource?.data?.length) {
-    // Optional: ResourceTable handles loading too, but we can keep specific loading UI if desired.
-    // ResourceTable's loading is inside the table usually.
-    // If we return early here, we lose the table shell.
-    // Better to let ResourceTable handle it.
+
   }
+
+  const stripHtml = (htmlString) => {
+    if (!htmlString) return '';
+    try {
+      const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+
+      // Attempt to get text from block elements like li and p first
+      const blocks = Array.from(doc.querySelectorAll('li, p'));
+
+      if (blocks.length > 0) {
+        return blocks
+          .map(el => el.textContent.trim())
+          .filter(text => text.length > 0)
+          .join(', ');
+      }
+
+      // Fallback
+      return doc.body.textContent || "";
+    } catch {
+      return "";
+    }
+  };
 
   const columns = [
     { key: 'name', label: 'Name' },
     { key: 'location', label: 'Location' },
     { key: 'type', label: 'Type' },
-    { key: 'skills', label: 'Skills' },
+    {
+      key: 'skills',
+      label: 'Skills',
+      render: (row) => {
+        const val = row.skills;
+        const localized = getLocalizedValue(val);
+        const stripped = stripHtml(localized);
+        // Truncate if too long (skills can be long rich text now)
+        return stripped.length > 50 ? `${stripped.substring(0, 50)}...` : stripped;
+      }
+    },
   ];
 
   const actions = (row) => (

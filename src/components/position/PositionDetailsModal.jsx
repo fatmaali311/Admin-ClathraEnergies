@@ -14,7 +14,7 @@ const DetailRow = ({ label, value, isFullWidth = false }) => (
     py: 1.5,
     borderBottom: '1px solid #eee'
   }}>
-    <Typography variant="body1" sx={{ color:PRIMARY_COLOR, fontWeight: 'bold', minWidth: '150px' }}>
+    <Typography variant="body1" sx={{ color: PRIMARY_COLOR, fontWeight: 'bold', minWidth: '150px' }}>
       {label}:
     </Typography>
     <Typography variant="body1" sx={{ color: '#4A4A4A', mt: isFullWidth ? 1 : 0 }}>
@@ -22,6 +22,27 @@ const DetailRow = ({ label, value, isFullWidth = false }) => (
     </Typography>
   </Box>
 );
+
+function DetailRichTextRow({ label, value }) {
+  const content = getLocalizedValue(value);
+  return (
+    <Box sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-start',
+      py: 1.5,
+      borderBottom: '1px solid #eee'
+    }}>
+      <Typography variant="body1" sx={{ color: PRIMARY_COLOR, fontWeight: 'bold', minWidth: '150px', mb: 1 }}>
+        {label}:
+      </Typography>
+      <Box
+        className="prose prose-sm max-w-none text-gray-700"
+        dangerouslySetInnerHTML={{ __html: content || 'N/A' }}
+      />
+    </Box>
+  );
+}
 
 export default function PositionDetailsModal({ open, onClose, position }) {
   if (!position) return null;
@@ -54,12 +75,12 @@ export default function PositionDetailsModal({ open, onClose, position }) {
       </Box>
 
       <Box sx={{ mt: 3, bgcolor: 'white', p: 4, borderRadius: '12px', boxShadow: 3 }}>
-        <Typography variant="h6" sx={{ color:PRIMARY_COLOR, mb: 2, borderBottom: '2px solid #eee' }}>Details</Typography>
+        <Typography variant="h6" sx={{ color: PRIMARY_COLOR, mb: 2, borderBottom: '2px solid #eee' }}>Details</Typography>
 
-        <DetailRow label="What We Offer" value={position.whatWeOffer} isFullWidth />
-        <DetailRow label="Why We're Looking" value={position.whyWeAreLooking} isFullWidth />
-        <DetailRow label="Responsibilities" value={position.responsibilities} isFullWidth />
-        <DetailRow label="Skills Required" value={position.skills} isFullWidth />
+        <DetailRichTextRow label="What We Offer" value={position.whatWeOffer} />
+        <DetailRichTextRow label="Why We're Looking" value={position.whyWeAreLooking} />
+        <DetailRichTextRow label="Responsibilities" value={position.responsibilities} />
+        <DetailRichTextRow label="Skills Required" value={position.skills} />
       </Box>
     </ReusableModal>
   );
