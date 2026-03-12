@@ -93,7 +93,7 @@ export default function ApplicationDetailsModal({ open, onClose, application }) 
                             {files[field.key] ? (
                                 <Button
                                     component={Link}
-                                    href={files[field.key]}
+                                    href={`${import.meta.env.VITE_API_URL.replace(/\/+$/, "")}${new URL(files[field.key]).pathname}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     startIcon={<FileDownloadIcon />}
